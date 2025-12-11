@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-SpringBobbaApplication<spring_bobba>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.panda_bobba.spring_bobba.SpringBobbaApplication",
+            "projectName": "spring_bobba",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
