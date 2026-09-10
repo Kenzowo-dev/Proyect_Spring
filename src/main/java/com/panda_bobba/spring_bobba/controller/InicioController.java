@@ -23,7 +23,7 @@ public class InicioController {
     @Autowired
 private CategoriaService categoriaService;
 
-@GetMapping
+@GetMapping({"", "inicio"})
 public String listarProductos(Model model) {
     List<String> categorias = categoriaService.obtenerNombres();
     List<ProductoJPA> productos = new ArrayList<>();

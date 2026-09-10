@@ -11,4 +11,5 @@ import com.panda_bobba.spring_bobba.model.ProductoJPA;
 public interface ProductoRepository extends CrudRepository<ProductoJPA, Long> {
     List<ProductoJPA> findByCategoryJPA(String categoryJPA);
     ProductoJPA findTopByCategoryJPAOrderByPriceJPADesc(String categoryJPA);
+    boolean existsByNameJPA(String nameJPA);
 }

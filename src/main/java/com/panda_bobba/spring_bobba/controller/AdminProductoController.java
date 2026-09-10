@@ -30,6 +30,10 @@ public class AdminProductoController {
         List<ProductoJPA> productos = productoServices.findAll();
         model.addAttribute("productos", productos);
         model.addAttribute("titulo", "Gestión de Productos");
+        model.addAttribute("totalProductos", productos.size());
+        model.addAttribute("totalCalientes", productos.stream().filter(producto -> "Caliente".equals(producto.getCategoryJPA())).count());
+        model.addAttribute("totalFrios", productos.stream().filter(producto -> "Frío".equals(producto.getCategoryJPA())).count());
+        model.addAttribute("totalBubbleTea", productos.stream().filter(producto -> "Bubble Tea".equals(producto.getCategoryJPA())).count());
         return "admin-productos";
     }
 

@@ -3,31 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Productos - Panda Bobba</title>
+    <title>Gestión de productos - Panda Bobba</title>
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" th:href="@{/css/brand.css}">
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+        <nav class="navbar navbar-expand-lg brand-navbar fixed-top">
             <div class="container">
-                <a class="navbar-brand" th:href="@{/}">
-                    <img th:src="@{/images/icono.jpg}" alt="Icono" class="img-fluid rounded" style="width:32px; height:32px;">
-                    Panda Bobba
+                <a class="navbar-brand d-flex align-items-center gap-2" th:href="@{/}">
+                    <img th:src="@{/images/icono.jpg}" alt="Panda Bobba" class="brand-logo">
+                    <span>Panda Bobba</span>
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Abrir navegación">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item"><a class="nav-link" th:href="@{/}">Inicio</a></li>
+                    <ul class="navbar-nav ms-auto align-items-lg-center">
+                        <li class="nav-item"><a class="nav-link" th:href="@{/inicio}">Inicio</a></li>
                         <li class="nav-item"><a class="nav-link" th:href="@{/productos}">Productos</a></li>
                         <li class="nav-item"><a class="nav-link" th:href="@{/nosotros}">Nosotros</a></li>
                         <li class="nav-item"><a class="nav-link active" th:href="@{/admin/productos}">Administrar</a></li>
                         <li class="nav-item">
                             <form th:action="@{/logout}" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-outline-danger btn-sm">Cerrar Sesión</button>
+                                <button type="submit" class="btn btn-outline-danger btn-sm ms-lg-2">Cerrar sesión</button>
                             </form>
                         </li>
                     </ul>
@@ -36,114 +40,131 @@
         </nav>
     </header>
 
-    <main>
-        <section class="py-5">
+    <main class="admin-shell">
+        <section class="admin-hero">
             <div class="container">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1 th:text="${titulo}">Gestión de Productos</h1>
-                    <a th:href="@{/admin/productos/nuevo}" class="btn btn-success">
-                        <i class="bi bi-plus-circle"></i> Agregar Producto
+                <div class="d-flex flex-column flex-lg-row align-items-lg-end justify-content-between gap-4 reveal">
+                    <div>
+                        <span class="eyebrow dark">Panel administrativo</span>
+                        <h1 class="admin-title" th:text="${titulo}">Gestión de productos</h1>
+                        <p class="admin-copy">Administra la carta pública de Panda Bobba. Todo lo que agregues aquí se muestra en las páginas de inicio y productos.</p>
+                    </div>
+                    <a th:href="@{/admin/productos/nuevo}" class="btn-brand">
+                        <i class="bi bi-plus-lg"></i> Nuevo producto
                     </a>
                 </div>
 
-                <!-- Mensajes de éxito o error -->
-                <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle"></i> <span th:text="${success}"></span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="admin-stat-grid reveal">
+                    <div class="admin-stat">
+                        <span>Total</span>
+                        <strong th:text="${totalProductos}">0</strong>
+                    </div>
+                    <div class="admin-stat">
+                        <span>Calientes</span>
+                        <strong th:text="${totalCalientes}">0</strong>
+                    </div>
+                    <div class="admin-stat">
+                        <span>Frías</span>
+                        <strong th:text="${totalFrios}">0</strong>
+                    </div>
+                    <div class="admin-stat">
+                        <span>Bubble tea</span>
+                        <strong th:text="${totalBubbleTea}">0</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="pb-5">
+            <div class="container">
+                <div th:if="${success}" class="alert alert-success alert-dismissible fade show reveal" role="alert">
+                    <i class="bi bi-check-circle me-2"></i><span th:text="${success}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
                 </div>
 
-                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle"></i> <span th:text="${error}"></span>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div th:if="${error}" class="alert alert-danger alert-dismissible fade show reveal" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${error}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
                 </div>
 
-                <!-- Tabla de productos -->
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nombre</th>
-                                        <th>Descripción</th>
-                                        <th>Categoría</th>
-                                        <th>Precio</th>
-                                        <th>Imagen</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="producto : ${productos}">
-                                        <td th:text="${producto.idJPA}">1</td>
-                                        <td th:text="${producto.nameJPA}">Nombre</td>
-                                        <td th:text="${#strings.abbreviate(producto.descriptionJPA, 50)}">Descripción</td>
-                                        <td>
-                                            <span class="badge bg-info" th:text="${producto.categoryJPA}">Categoría</span>
-                                        </td>
-                                        <td class="text-success fw-bold">S/ <span th:text="${producto.priceJPA}">0.00</span></td>
-                                        <td>
-                                            <img th:src="${producto.imageURLJPA}" alt="Producto" 
-                                                 style="width: 50px; height: 50px; object-fit: cover;" class="rounded">
-                                        </td>
-                                        <td>
-                                            <div class="btn-group" role="group">
-                                                <a th:href="@{/admin/productos/editar/{id}(id=${producto.idJPA})}" 
-                                                   class="btn btn-sm btn-warning" title="Editar">
-                                                    <i class="bi bi-pencil"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-sm btn-danger" 
-                                                        data-bs-toggle="modal" 
-                                                        th:data-bs-target="'#deleteModal' + ${producto.idJPA}"
-                                                        title="Eliminar">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
+                <div class="admin-panel reveal">
+                    <div class="admin-panel-header">
+                        <h2 class="admin-panel-title">Carta publicada</h2>
+                        <a th:href="@{/productos}" class="text-link" target="_blank" rel="noopener noreferrer">Ver página</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover admin-table" th:if="${!#lists.isEmpty(productos)}">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Descripción</th>
+                                    <th>Categoría</th>
+                                    <th>Precio</th>
+                                    <th class="text-end">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="producto : ${productos}">
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <img th:src="${producto.imageURLJPA}" alt="Producto" class="admin-thumb">
+                                            <div>
+                                                <div class="fw-bold" th:text="${producto.nameJPA}">Nombre</div>
+                                                <small class="text-muted">ID <span th:text="${producto.idJPA}">1</span></small>
                                             </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-muted" th:text="${#strings.abbreviate(producto.descriptionJPA, 72)}">Descripción</td>
+                                    <td><span class="admin-badge" th:text="${producto.categoryJPA}">Categoría</span></td>
+                                    <td class="price">S/ <span th:text="${#numbers.formatDecimal(producto.priceJPA, 1, 2)}">0.00</span></td>
+                                    <td class="text-end">
+                                        <a th:href="@{/admin/productos/editar/{id}(id=${producto.idJPA})}" class="btn btn-outline-secondary admin-action me-1" title="Editar">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button" class="btn btn-outline-danger admin-action"
+                                                data-bs-toggle="modal"
+                                                th:data-bs-target="'#deleteModal' + ${producto.idJPA}"
+                                                title="Eliminar">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
 
-                                            <!-- Modal de confirmación de eliminación -->
-                                            <div class="modal fade" th:id="'deleteModal' + ${producto.idJPA}" tabindex="-1">
-                                                <div class="modal-dialog">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h5 class="modal-title">Confirmar Eliminación</h5>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                        </div>
-                                                        <div class="modal-body">
-                                                            ¿Está seguro de que desea eliminar el producto 
-                                                            <strong th:text="${producto.nameJPA}"></strong>?
-                                                        </div>
-                                                        <div class="modal-footer">
-                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                                            <form th:action="@{/admin/productos/eliminar/{id}(id=${producto.idJPA})}" 
-                                                                  method="post" class="d-inline">
-                                                                <button type="submit" class="btn btn-danger">Eliminar</button>
-                                                            </form>
-                                                        </div>
+                                        <div class="modal fade text-start" th:id="'deleteModal' + ${producto.idJPA}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog modal-dialog-centered">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Eliminar producto</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Esta acción quitará <strong th:text="${producto.nameJPA}">el producto</strong> de la carta pública.
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                                        <form th:action="@{/admin/productos/eliminar/{id}(id=${producto.idJPA})}" method="post" class="d-inline">
+                                                            <button type="submit" class="btn btn-danger">Eliminar</button>
+                                                        </form>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-                        <div th:if="${#lists.isEmpty(productos)}" class="text-center text-muted py-4">
-                            <i class="bi bi-inbox fs-1"></i>
-                            <p>No hay productos registrados</p>
-                        </div>
+                    <div th:if="${#lists.isEmpty(productos)}" class="empty-state">
+                        <i class="bi bi-cup-hot fs-1 d-block mb-3"></i>
+                        <h3 class="h5 fw-bold">Aún no hay productos</h3>
+                        <p class="mb-4">Agrega el primer producto para publicarlo en la carta.</p>
+                        <a th:href="@{/admin/productos/nuevo}" class="btn-brand">Crear producto</a>
                     </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <footer class="footer text-center py-4 mt-5">
-        <div class="container">
-            <p class="text-muted">&copy; 2025 Panda Bobba. Todos los derechos reservados.</p>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/js/brand.js}"></script>
 </body>
 </html>
