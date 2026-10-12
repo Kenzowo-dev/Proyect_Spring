@@ -1,9 +1,14 @@
+C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\config\ApiSecurityConfig.java
 C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\config\DataInitializer.java
 C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\config\SecurityConfig.java
 C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\controller\AdminProductoController.java
+C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\controller\ApiAuthController.java
+C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\controller\ApiExceptionHandler.java
 C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\controller\AuthController.java
+C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\controller\GestionController.java
 C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\controller\InicioController.java
 C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\controller\NosotrosController.java
+C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\controller\ProductoApiController.java
 C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\controller\ProductoController.java
 C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\DTO\MemberChargeDTO.java
 C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\model\Categoria.java
@@ -25,6 +30,7 @@ C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda
 C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\services\CustomUserDetailsService.java
 C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\services\Members_chargesServices.java
 C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\services\Members_chargesServicesImpl.java
+C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\services\ProductoApiService.java
 C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\services\ProductoServices.java
 C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\services\ProductoServicesImpl.java
 C:\Users\luist\Downloads\PROYECTO WEB INT\Proyect_Spring\src\main\java\com\panda_bobba\spring_bobba\SpringBobbaApplication.java

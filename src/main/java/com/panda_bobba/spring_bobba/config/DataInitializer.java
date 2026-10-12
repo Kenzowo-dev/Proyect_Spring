@@ -138,8 +138,6 @@ public class DataInitializer implements CommandLineRunner {
 
         System.out.println("===========================================");
         System.out.println("Datos iniciales verificados/creados.");
-        System.out.println("Admin - username: admin, password: admin123");
-        System.out.println("User - username: user, password: user123");
         System.out.println("===========================================");
     }
 

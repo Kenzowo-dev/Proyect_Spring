@@ -10,6 +10,25 @@
     --brand-shadow: 0 22px 60px rgba(23, 33, 27, 0.12);
 }
 
+.public-login-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 40px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: var(--brand-accent-dark);
+    color: #fff;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 700ms cubic-bezier(.32, .72, 0, 1);
+}
+.public-login-button:hover { background: #173829; color: #fff; }
+.public-login-button:active { transform: translateY(1px); }
+.public-login-button:focus-visible { outline: 3px solid var(--brand-warm); outline-offset: 4px; }
+
 * {
     letter-spacing: 0;
 }

@@ -26,6 +26,7 @@ public class SecurityConfig {
                 .requestMatchers("/", "/inicio", "/productos", "/nosotros").permitAll()
                 .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
                 .requestMatchers("/login", "/error").permitAll()
+                .requestMatchers("/panel", "/gestion", "/access-denied").permitAll()
                 
                 // Rutas administrativas solo para ROLE_ADMIN
                 .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
@@ -35,7 +36,7 @@ public class SecurityConfig {
             )
             .formLogin(form -> form
                 .loginPage("/login")
-                .defaultSuccessUrl("/admin/productos", true)
+                .defaultSuccessUrl("/panel", true)
                 .failureUrl("/login?error=true")
                 .permitAll()
             )

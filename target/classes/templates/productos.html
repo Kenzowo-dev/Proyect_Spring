@@ -7,11 +7,11 @@
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" th:href="@{/css/brand.css}">
+    <link rel="stylesheet" th:href="@{/css/brand.css}"><link rel="stylesheet" href="/css/editorial.css">
 </head>
-<body>
+<body class="editorial-site">
     <header>
         <nav class="navbar navbar-expand-lg brand-navbar fixed-top">
             <div class="container">
@@ -24,22 +24,7 @@
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto align-items-lg-center">
-                        <li class="nav-item"><a class="nav-link" th:href="@{/inicio}">Inicio</a></li>
-                        <li class="nav-item"><a class="nav-link active" th:href="@{/productos}">Productos</a></li>
-                        <li class="nav-item"><a class="nav-link" th:href="@{/nosotros}">Nosotros</a></li>
-                        <li class="nav-item" sec:authorize="hasAuthority('ROLE_ADMIN')">
-                            <a class="nav-link" th:href="@{/admin/productos}">Administrar</a>
-                        </li>
-                        <li class="nav-item" sec:authorize="isAuthenticated()">
-                            <form th:action="@{/logout}" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-outline-danger btn-sm ms-lg-2">Cerrar sesión</button>
-                            </form>
-                        </li>
-                        <li class="nav-item" sec:authorize="!isAuthenticated()">
-                            <a class="nav-link" th:href="@{/login}">Iniciar sesión</a>
-                        </li>
-                    </ul>
+                    <ul th:replace="~{fragments/public-nav :: menu('productos')}"></ul>
                 </div>
             </div>
         </nav>
@@ -80,7 +65,7 @@
                                 <h3 class="product-title" th:text="${producto.nameJPA}">Producto</h3>
                                 <p class="product-text" th:text="${producto.descriptionJPA}">Sabor profundo, textura suave y preparación al momento.</p>
                                 <div class="product-footer">
-                                    <span class="price">S/ <span th:text="${producto.priceJPA}">0.00</span></span>
+                                    <span class="price">S/ <span th:text="${#numbers.formatDecimal(producto.priceJPA, 1, 'COMMA', 2, 'POINT')}">0.00</span></span>
                                     <a class="text-link" href="https://www.instagram.com/pandabobba_trujillo/" target="_blank" rel="noopener noreferrer">Consultar</a>
                                 </div>
                             </div>
@@ -101,7 +86,7 @@
                                 <h3 class="product-title" th:text="${producto.nameJPA}">Producto</h3>
                                 <p class="product-text" th:text="${producto.descriptionJPA}">Una mezcla refrescante, equilibrada y lista para disfrutar.</p>
                                 <div class="product-footer">
-                                    <span class="price">S/ <span th:text="${producto.priceJPA}">0.00</span></span>
+                                    <span class="price">S/ <span th:text="${#numbers.formatDecimal(producto.priceJPA, 1, 'COMMA', 2, 'POINT')}">0.00</span></span>
                                     <a class="text-link" href="https://www.instagram.com/pandabobba_trujillo/" target="_blank" rel="noopener noreferrer">Consultar</a>
                                 </div>
                             </div>
@@ -122,7 +107,7 @@
                                 <h3 class="product-title" th:text="${producto.nameJPA}">Producto</h3>
                                 <p class="product-text" th:text="${producto.descriptionJPA}">Perlas, sabor y una preparación visualmente impecable.</p>
                                 <div class="product-footer">
-                                    <span class="price">S/ <span th:text="${producto.priceJPA}">0.00</span></span>
+                                    <span class="price">S/ <span th:text="${#numbers.formatDecimal(producto.priceJPA, 1, 'COMMA', 2, 'POINT')}">0.00</span></span>
                                     <a class="text-link" href="https://www.instagram.com/pandabobba_trujillo/" target="_blank" rel="noopener noreferrer">Consultar</a>
                                 </div>
                             </div>
@@ -142,8 +127,8 @@
                 </div>
                 <div class="col-md-4 text-md-center">
                     <a href="https://www.instagram.com/pandabobba_trujillo/" rel="noopener noreferrer" target="_blank" class="social-link fs-4 me-3"><i class="bi bi-instagram"></i></a>
-                    <a href="#" class="social-link fs-4 me-3"><i class="bi bi-facebook"></i></a>
-                    <a href="#" class="social-link fs-4"><i class="bi bi-twitter-x"></i></a>
+
+
                 </div>
                 <div class="col-md-4 text-md-end">
                     <p class="text-muted small mb-0">&copy; 2026 Panda Bobba. Todos los derechos reservados.</p>
