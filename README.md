@@ -1,17 +1,24 @@
 # Panda Bobba - Proyecto Spring Boot
 
+## Segundo avance: semana 10
+
+El sitio público muestra Inicio, Productos y Nosotros, con un botón verde para iniciar sesión. El acceso en `/login` abre `/panel`, que integra el nuevo diseño de gestión, CRUD JSON, búsqueda JPQL y actualización transaccional de precios con roles USER/ADMIN. Consulta [la evaluación completa y la guía de los doce pasos F12](docs/AVANCE_2.md) para preparar la exposición.
+
+Verificación automatizada: `mvn test`. Las pruebas usan H2; la aplicación normal usa SQL Server.
+
 ## Descripción
 Aplicación web informativa para la tienda de bubble tea "Panda Bobba". Proyecto desarrollado con Spring Boot que incluye gestión completa de productos con operaciones CRUD, validaciones, y sistema de seguridad con autenticación y autorización.
 
 ## Tecnologías Utilizadas
 
 ### Backend
-- **Java 25**
+- **Java 17 o superior** (compilación para Java 17)
 - **Spring Boot 3.5.7**
 - **Spring Data JPA** con Hibernate
 - **Spring Validation** para validación de datos
 - **Spring Security** para autenticación y autorización
-- **MySQL** como base de datos
+- **SQL Server** como base de datos
+- **Spring Security OAuth2 Resource Server** para validar JWT RS256
 
 ### Frontend
 - **Thymeleaf** como motor de plantillas
@@ -47,13 +54,13 @@ Aplicación web informativa para la tienda de bubble tea "Panda Bobba". Proyecto
 ## Requisitos Previos
 
 1. **Java JDK 17 o superior** instalado
-2. **MySQL Server** instalado y ejecutándose
-3. **Maven** (incluido en el proyecto con Maven Wrapper)
+2. **SQL Server** instalado y ejecutándose en el puerto 1433
+3. **Apache Maven** instalado y disponible en PATH
 
 ## Configuración de Base de Datos
 
 ### Paso 1: Crear la base de datos
-Ejecuta el siguiente comando en MySQL:
+Ejecuta el siguiente comando en SQL Server Management Studio y configura un usuario con acceso a esa base:
 
 ```sql
 CREATE DATABASE PandaBobbaBD;
@@ -63,25 +70,25 @@ CREATE DATABASE PandaBobbaBD;
 Edita el archivo `src/main/resources/application.properties` si es necesario:
 
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/PandaBobbaBD
-spring.datasource.username=root
-spring.datasource.password=12345678
+spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=PandaBobbaBD;encrypt=true;trustServerCertificate=true
+spring.datasource.username=TU_USUARIO_SQL_SERVER
+spring.datasource.password=TU_CLAVE_SQL_SERVER
 ```
 
 **Nota:** Las tablas se crearán automáticamente al ejecutar la aplicación gracias a Hibernate.
 
 ## Ejecución del Proyecto
 
-### Opción 1: Usando Maven Wrapper (Recomendado)
+### Opción 1: Desde la carpeta del proyecto
 
 #### En Windows:
 ```bash
-mvnw.cmd spring-boot:run
+mvn spring-boot:run
 ```
 
 #### En Linux/Mac:
 ```bash
-./mvnw spring-boot:run
+mvn spring-boot:run
 ```
 
 ### Opción 2: Usando Maven instalado
@@ -98,10 +105,11 @@ mvn spring-boot:run
 Una vez iniciada la aplicación, accede desde el navegador:
 
 - **Página principal:** http://localhost:8080/
+- **Panel con gestión de catálogo:** http://localhost:8080/panel
 - **Productos:** http://localhost:8080/productos
 - **Nosotros:** http://localhost:8080/nosotros
 - **Login:** http://localhost:8080/login
-- **Panel de administración:** http://localhost:8080/admin/productos (requiere autenticación)
+- **Acceso al panel:** inicia sesión; ADMIN puede gestionar y USER solo consultar
 
 ## Usuarios de Prueba
 
@@ -174,8 +182,8 @@ Los errores de validación se muestran en los formularios con mensajes específi
 
 ## Solución de Problemas
 
-### Error de conexión a MySQL
-- Verifica que MySQL esté ejecutándose
+### Error de conexión a SQL Server
+- Verifica que SQL Server esté ejecutándose y que TCP/IP esté habilitado en el puerto 1433
 - Confirma que la base de datos `PandaBobbaBD` existe
 - Revisa las credenciales en `application.properties`
 

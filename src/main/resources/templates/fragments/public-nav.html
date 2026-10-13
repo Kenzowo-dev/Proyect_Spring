@@ -1,0 +1,11 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+<ul th:fragment="menu(vista)" class="navbar-nav ms-auto align-items-lg-center">
+    <li class="nav-item"><a class="nav-link" th:classappend="${vista == 'inicio'} ? 'active'" th:href="@{/inicio}" th:attr="aria-current=${vista == 'inicio' ? 'page' : null}">Inicio</a></li>
+    <li class="nav-item"><a class="nav-link" th:classappend="${vista == 'productos'} ? 'active'" th:href="@{/productos}" th:attr="aria-current=${vista == 'productos' ? 'page' : null}">Productos</a></li>
+    <li class="nav-item"><a class="nav-link" th:classappend="${vista == 'nosotros'} ? 'active'" th:href="@{/nosotros}" th:attr="aria-current=${vista == 'nosotros' ? 'page' : null}">Nosotros</a></li>
+    <li class="nav-item"><a class="public-login-button ms-lg-3" th:href="@{/login}">Iniciar sesión</a></li>
+</ul>
+</body>
+</html>
