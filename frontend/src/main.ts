@@ -3,23 +3,40 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { bootstrapApplication } from '@angular/platform-browser';
-import { ActivatedRoute, provideRouter, Router, RouterLink, RouterOutlet, withHashLocation } from '@angular/router';
+import { ActivatedRoute, provideRouter, Router, RouterLink, RouterLinkActive, RouterOutlet, withHashLocation } from '@angular/router';
 import { finalize } from 'rxjs';
 import { adminGuard, bearerInterceptor, CatalogApi, httpMessage, Product, SessionService, sessionGuard } from './api';
 
 @Component({
   selector: 'pb-app',
-  imports: [RouterLink, RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet],
   template: `
-    <header><nav aria-label="Navegación principal">
-      <a class="brand" href="/inicio">Panda Bobba</a>
+    <header class="topbar">
+      <a class="brand" href="/inicio">
+        <img src="/images/icono.jpg" width="42" height="42" alt="">
+        <span>Panda Bobba
+          @if (auth.identity()) {
+            <small>{{ auth.admin() ? 'Panel administrativo' : 'Panel de consulta' }}</small>
+          }
+        </span>
+      </a>
       @if (auth.identity(); as session) {
-        <a routerLink="/catalogo">Catálogo</a>
-        @if (auth.admin()) { <a routerLink="/catalogo/nuevo">Nuevo producto</a> }
-        <span class="identity">{{ session.username }} · {{ auth.admin() ? 'Administrador' : 'Consulta' }}</span>
-        <button class="secondary" (click)="logout()">Cerrar sesión</button>
+        <nav class="topbar-menu" aria-label="Menú del panel">
+          <a routerLink="/catalogo" routerLinkActive="selected" [routerLinkActiveOptions]="{ exact: true }"
+            ariaCurrentWhenActive="page">Catálogo</a>
+          @if (auth.admin()) {
+            <a routerLink="/catalogo/nuevo" routerLinkActive="selected" ariaCurrentWhenActive="page">
+              <span class="add-icon" aria-hidden="true">+</span> Nuevo producto
+            </a>
+          }
+        </nav>
+        <div class="topbar-account">
+          <span class="avatar" aria-hidden="true">{{ session.username.slice(0, 1).toUpperCase() }}</span>
+          <span class="username">{{ session.username }}</span>
+          <button class="logout" (click)="logout()">Cerrar sesión</button>
+        </div>
       }
-    </nav></header>
+    </header>
     <main><router-outlet /></main>
   `,
 })

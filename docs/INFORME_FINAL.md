@@ -35,19 +35,21 @@ El formulario valida nombre, descripción, categoría, precio positivo e imagen.
 
 ## 5. Pruebas y resultados
 
-| Criterio oficial | Implementación y evidencia |
-| --- | --- |
-| **Integración Angular + Spring Boot + BD (4)** | Playwright verifica el flujo real del navegador contra Spring. La ejecución del workflow activa consultas SQL directas para comprobar alta, edición, lote y eliminación. |
-| **Funcionalidades, formularios y validación (4)** | Formularios reactivos y validación de Spring. La prueba comprueba precio inválido, CRUD, búsqueda, recarga, actualizaciones en lote y confirmación de borrado. |
-| **Seguridad, JWT y roles (4)** | El navegador comprueba rutas protegidas, encabezado Bearer, dos variantes de 401 y rechazo 403 por rol. Las pruebas Spring comprueban también tokens alterados y expirados. |
-| **Demostración, DevTools y despliegue (4)** | El guion indica qué mostrar en Headers, Payload y Response. La imagen y la configuración de Railway están incluidas. |
-| **Informe y sustentación técnica (4)** | Este informe documenta alcance, arquitectura, pruebas, conclusiones y preguntas de sustentación. El guion acompaña la exposición. |
+| Criterio oficial | Dónde se cumple | Estado de verificación |
+| --- | --- | --- |
+| **Integración Angular + Spring Boot + BD (4)** | El [cliente HTTP de Angular](../frontend/src/api.ts) llama a `/api/productos`. El [controlador REST](../src/main/java/com/panda_bobba/spring_bobba/controller/ProductoApiController.java) pasa las operaciones al [servicio JPA](../src/main/java/com/panda_bobba/spring_bobba/services/ProductoApiService.java). La ejecución normal usa el [driver y la URL JDBC de SQL Server](../src/main/resources/application.properties). | Navegador → Spring → H2 verificado. El [workflow de integración](../.github/workflows/integracion.yml) configura SQL Server y ejecuta comprobaciones directas de sus filas. La ejecución de ese workflow queda pendiente de acreditar. |
+| **Funcionalidades, formularios y validación (4)** | [Catálogo](../frontend/src/catalog.html), [editor de productos](../frontend/src/editor.html), [formularios y rutas Angular](../frontend/src/main.ts) y [validación del servicio](../src/main/java/com/panda_bobba/spring_bobba/services/ProductoApiService.java). | El [recorrido Playwright](../frontend/e2e/catalog.spec.ts) verifica el rechazo de precio cero, alta, lectura, edición, búsqueda, lote, recarga y borrado. |
+| **Seguridad, JWT y roles (4)** | [Interceptor y guards](../frontend/src/api.ts), [emisión de JWT](../src/main/java/com/panda_bobba/spring_bobba/controller/ApiAuthController.java) y [reglas de autorización de Spring](../src/main/java/com/panda_bobba/spring_bobba/config/ApiSecurityConfig.java). | Chrome comprobó rutas protegidas, Bearer, 401 sin token y con token inválido, y 403 al intentar escribir como USER. Maven comprobó también tokens alterados y expirados. |
+| **Demostración, DevTools y despliegue (4)** | El [guion](DEMOSTRACION_FINAL.md) indica qué mostrar en Headers, Payload y Response. El [Dockerfile](../Dockerfile) y [Railway](../railway.toml) contienen la configuración de publicación. | La prueba local comprobó métodos, estados, cuerpo de creación y encabezados. Quedan pendientes las capturas de DevTools y SQL Server, y repetir el recorrido sobre una URL publicada. |
+| **Informe y sustentación técnica (4)** | Este informe incluye alcance, arquitectura, resultados, conclusiones y preguntas de sustentación. El [guion](DEMOSTRACION_FINAL.md) acompaña la exposición. | El informe usa una estructura académica estándar. La plantilla oficial del curso y la exposición quedan por contrastar con el docente. |
+
+La revisión confirma la implementación y las pruebas locales. La calificación de 20/20 depende de acreditar las comprobaciones pendientes y de la evaluación del docente. Para demostrar el ciclo de vida de un registro, usa un producto creado en la prueba. Los productos de muestra se comprueban por nombre al arrancar y un ejemplo borrado puede reaparecer tras reiniciar Spring.
 
 **Resultados locales**
 
 - Angular compiló en modo de producción y Maven generó el JAR con los archivos de Angular.
 - Maven ejecutó 4 pruebas de Spring con H2, con 0 fallos y 0 errores.
-- Chrome ejecutó el recorrido de Playwright contra Spring y H2, con 1 prueba aprobada. Se verificaron alta, consulta, edición, lote, recarga, eliminación, acceso por rol y respuestas 401 y 403.
+- Chrome ejecutó el recorrido de Playwright contra Spring y H2, con 1 prueba aprobada. Se verificaron alta, consulta, edición, lote, recarga, eliminación, acceso por rol y respuestas 401 y 403. También se comprobó el menú en 360 px, sin desbordamiento horizontal y con la pestaña actual identificada mediante aria-current.
 - La ejecución de GitHub Actions con SQL Server, las capturas de DevTools y la verificación del dominio publicado quedan pendientes de acreditar.
 
 ## 6. Preguntas de sustentación

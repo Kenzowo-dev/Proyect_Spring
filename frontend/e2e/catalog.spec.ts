@@ -52,7 +52,14 @@ test('Angular navega, valida, aplica roles y persiste el CRUD mediante Spring', 
   expect((await failedLogin).status()).toBe(401);
   await expect(page.getByRole('alert')).toContainText('incorrectos');
   await login(page, 'admin', process.env.DEMO_ADMIN_PASSWORD ?? 'admin123');
-  await page.getByRole('link', { name: 'Nuevo producto' }).click();
+  const menu = page.getByRole('navigation', { name: 'Menú del panel' });
+  await expect(menu.getByRole('link', { name: 'Catálogo', exact: true })).toHaveAttribute('aria-current', 'page');
+  await page.setViewportSize({ width: 360, height: 800 });
+  await expect(menu).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(360);
+  await menu.getByRole('link', { name: 'Nuevo producto' }).click();
+  await expect(menu.getByRole('link', { name: 'Nuevo producto' })).toHaveAttribute('aria-current', 'page');
+  await page.setViewportSize({ width: 1280, height: 800 });
   await page.getByRole('button', { name: 'Guardar producto' }).click();
   await expect(page.getByText('El precio debe ser mayor que cero.')).toBeVisible();
   await page.getByLabel('Nombre').fill(name);
