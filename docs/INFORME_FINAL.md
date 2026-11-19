@@ -29,7 +29,7 @@ El formulario valida nombre, descripción, categoría, precio positivo e imagen.
 
 - Angular usa formularios reactivos y rutas para acceso, catálogo, alta y edición. Un interceptor adjunta el Bearer a la API. Dos guards verifican sesión y acceso administrativo. El enrutamiento por fragmentos permite abrir una URL interna desde el JAR.
 - Spring separa el controlador, el servicio transaccional y el repositorio. El repositorio usa JPQL para combinar filtros opcionales. SQL Server asigna la clave del producto al insertar y mantiene los datos tras recargar el navegador.
-- Spring Security autentica las cuentas usando BCrypt, emite un JWT RS256 con una vigencia de 30 minutos y valida firma, emisor y vigencia en la API. Angular guarda la sesión de la pestaña en `sessionStorage`. El servidor genera la clave al arrancar, por lo que reiniciar requiere volver a iniciar sesión.
+- Spring Security autentica las cuentas usando BCrypt, emite un JWT RS256 con una vigencia de 30 minutos y valida firma, emisor y vigencia en la API. Angular conserva el JWT en memoria y lo renueva con una sesión de servidor de hasta ocho horas, identificada con una cookie HttpOnly y SameSite=Lax. Spring vincula cada JWT del navegador con la sesión que lo emitió. El cierre de sesión lo invalida también en otras pestañas. El servidor genera la clave al arrancar, por lo que reiniciar requiere volver a iniciar sesión.
 - Los roles y las cuentas residen en SQL Server. El usuario de consulta recibe 403 ante una escritura y la creación de cuentas de demostración toma sus contraseñas de la configuración del entorno.
 - El Dockerfile compila Angular y lo incorpora al JAR. La misma imagen contiene la interfaz de gestión, la API y el sitio público. SQL Server se configura como servicio externo.
 
@@ -49,7 +49,7 @@ La revisión confirma la implementación y las pruebas locales. La calificación
 
 - Angular compiló en modo de producción y Maven generó el JAR con los archivos de Angular.
 - Maven ejecutó 4 pruebas de Spring con H2, con 0 fallos y 0 errores.
-- Chrome ejecutó el recorrido de Playwright contra Spring y H2, con 1 prueba aprobada. Se verificaron alta, consulta, edición, lote, recarga, eliminación, acceso por rol y respuestas 401 y 403. También se comprobó el menú en 360 px, sin desbordamiento horizontal y con la pestaña actual identificada mediante aria-current.
+- Playwright ejecutó el recorrido del catálogo y un recorrido de sesión en varias pestañas contra Spring y H2. Se verificaron alta, consulta, edición, lote, recarga, eliminación, acceso por rol y respuestas 401 y 403. También se comprobó el menú en 360 px, sin desbordamiento horizontal y con la pestaña actual identificada mediante aria-current.
 - La ejecución de GitHub Actions con SQL Server, las capturas de DevTools y la verificación del dominio publicado quedan pendientes de acreditar.
 
 ## 6. Preguntas de sustentación

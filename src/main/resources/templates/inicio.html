@@ -19,7 +19,7 @@
                     <img th:src="@{/images/icono.jpg}" alt="Panda Bobba" class="brand-logo">
                     <span>Panda Bobba</span>
                 </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Abrir navegación">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Abrir navegación">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
@@ -35,7 +35,11 @@
             <span class="confetti" aria-hidden="true"></span><span class="confetti second" aria-hidden="true"></span><span class="confetti third" aria-hidden="true"></span>
             <h1>Un sorbo de <span>felicidad.</span></h1>
             <div class="editorial-hero-grid">
-                <div class="editorial-intro"><div class="intro-line"><span class="editorial-star" aria-hidden="true">✳</span><p>Bubble tea, matcha y café preparados al momento en Trujillo.</p></div><p class="intro-tag">Panda Bobba · Caliente · Frío · Bubble Tea</p><a class="btn-brand" th:href="@{/productos}">Explorar la carta</a></div>
+                <div class="editorial-intro">
+                    <div class="intro-line"><span class="editorial-star" aria-hidden="true">✳</span><p>Bubble tea, matcha y café preparados al momento en Trujillo.</p></div>
+                    <a class="btn-brand" th:href="@{/productos}">Explorar la carta <span aria-hidden="true">↗</span></a>
+                    <a class="home-panel-link" th:href="@{/app/}" data-session-panel hidden>Ir a mi panel <span aria-hidden="true">→</span></a>
+                </div>
                 <figure class="editorial-photo"><img src="/images/login-side.jpg" alt="Bebidas de bubble tea Panda Bobba"></figure>
             </div>
         </section>

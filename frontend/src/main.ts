@@ -5,7 +5,7 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { ActivatedRoute, provideRouter, Router, RouterLink, RouterLinkActive, RouterOutlet, withHashLocation } from '@angular/router';
 import { finalize } from 'rxjs';
-import { adminGuard, bearerInterceptor, CatalogApi, httpMessage, Product, SessionService, sessionGuard } from './api';
+import { adminGuard, bearerInterceptor, CatalogApi, guestGuard, httpMessage, Product, SessionService, sessionGuard } from './api';
 
 @Component({
   selector: 'pb-app',
@@ -32,22 +32,34 @@ import { adminGuard, bearerInterceptor, CatalogApi, httpMessage, Product, Sessio
         </nav>
         <div class="topbar-account">
           <span class="avatar" aria-hidden="true">{{ session.username.slice(0, 1).toUpperCase() }}</span>
-          <span class="username">{{ session.username }}</span>
-          <button class="logout" (click)="logout()">Cerrar sesión</button>
+          <span class="username" [title]="session.username">{{ session.username }}</span>
+          <button class="logout" [disabled]="leaving()" (click)="logout()">Cerrar sesión</button>
         </div>
       }
     </header>
-    <main><router-outlet /></main>
+    <main>
+      @if (sessionError()) { <p class="error session-notice" role="alert">{{ sessionError() }}</p> }
+      <router-outlet />
+    </main>
   `,
 })
 class App {
   readonly auth = inject(SessionService);
   private readonly router = inject(Router);
 
-  async logout() {
-    this.auth.clear();
-    const moved = await this.router.navigate(['/acceso'], { replaceUrl: true });
-    if (moved) window.location.reload();
+  readonly leaving = signal(false);
+  readonly sessionError = signal('');
+
+  logout() {
+    this.leaving.set(true);
+    this.sessionError.set('');
+    this.auth.logout().pipe(finalize(() => this.leaving.set(false))).subscribe({
+      next: async () => {
+        await this.router.navigate(['/acceso'], { replaceUrl: true });
+        window.location.reload();
+      },
+      error: () => this.sessionError.set('No se pudo cerrar la sesión. Vuelve a intentarlo.'),
+    });
   }
 }
 
@@ -55,7 +67,10 @@ class App {
   imports: [ReactiveFormsModule],
   template: `
     <section class="login card">
-      <h1>Acceso al catálogo</h1>
+      <div class="login-heading">
+        <img src="/images/icono.jpg" width="52" height="52" alt="">
+        <h1>Acceso al catálogo</h1>
+      </div>
       <form [formGroup]="form" (ngSubmit)="submit()">
         <label>Usuario <input formControlName="username" autocomplete="username"></label>
         <label>Contraseña <input formControlName="password" type="password" autocomplete="current-password"></label>
@@ -70,8 +85,10 @@ class LoginPage {
   private readonly auth = inject(SessionService);
   private readonly router = inject(Router);
   readonly busy = signal(false);
-  readonly error = signal(inject(ActivatedRoute).snapshot.queryParamMap.has('sesion')
-    ? 'Tu sesión terminó. Ingresa nuevamente.' : '');
+  private readonly sessionIssue = inject(ActivatedRoute).snapshot.queryParamMap.get('sesion');
+  readonly error = signal(this.sessionIssue === 'sin-conexion'
+    ? 'No se pudo verificar la sesión. Si tienes conexión, vuelve a intentarlo.'
+    : this.sessionIssue === 'vencida' ? 'Tu sesión terminó. Ingresa nuevamente.' : '');
   readonly form = inject(FormBuilder).nonNullable.group({
     username: ['', [Validators.required, Validators.pattern(/\S/)]],
     password: ['', Validators.required],
@@ -268,7 +285,7 @@ bootstrapApplication(App, {
   providers: [
     provideHttpClient(withInterceptors([bearerInterceptor])),
     provideRouter([
-      { path: 'acceso', component: LoginPage },
+      { path: 'acceso', component: LoginPage, canActivate: [guestGuard] },
       { path: 'catalogo/nuevo', component: ProductEditor, canActivate: [adminGuard] },
       { path: 'catalogo/:id/editar', component: ProductEditor, canActivate: [adminGuard] },
       { path: 'catalogo', component: CatalogPage, canActivate: [sessionGuard] },

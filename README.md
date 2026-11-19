@@ -39,6 +39,12 @@ Requisitos: Node.js 22.12 o posterior dentro de la serie 22, JDK 17, Maven 3.9 y
 
 4. Abre `http://localhost:8080/app/` o entra en `http://localhost:8080/inicio` y pulsa **Iniciar sesión**. Para desarrollo con recarga automática, ejecuta `npm --prefix frontend start` y usa el puerto 4200. El proxy de desarrollo apunta al backend en 8080.
 
+## Sesión del navegador
+
+El acceso desde `/app/` crea una sesión de hasta ocho horas. Inicio muestra **Sesión activa** con el nombre de la cuenta e **Ir a mi panel**. Cada pestaña nueva valida la sesión con Spring. El interceptor renueva en segundo plano el JWT de 30 minutos al volver a usar el catálogo. La cookie de sesión es HttpOnly, SameSite=Lax y se marca Secure cuando la conexión es HTTPS. Al cerrar sesión, el servidor invalida la sesión y los JWT vinculados a ella.
+
+Spring almacena estas sesiones en memoria. Un reinicio del servidor requiere volver a iniciar sesión. El endpoint `POST /api/auth/login` conserva el contrato Bearer para clientes de la API. Angular usa `/api/session/login`, protegido con CSRF.
+
 ## Pruebas
 
 `mvn test` verifica la API con H2, incluido el rollback del lote y los controles JWT. Con Spring en ejecución y las variables de las cuentas disponibles en la terminal, instala Chromium con `npx playwright install chromium` y ejecuta `npm run test:e2e` desde `frontend`. La prueba usa el backend real y, cuando `E2E_SQL_CONTAINER` apunta al contenedor de la base de pruebas, confirma las filas mediante consultas SQL independientes.

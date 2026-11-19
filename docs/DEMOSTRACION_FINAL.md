@@ -5,7 +5,8 @@ Usa la aplicación conectada a una base SQL Server de demostración. Abre `/app/
 | Acción desde Angular | Qué mostrar en Network | Comprobación |
 | --- | --- | --- |
 | Abre `#/catalogo/nuevo` en una pestaña sin sesión | El guard dirige a `#/acceso` | No se abre el formulario |
-| Entra como `admin` | POST `/api/auth/login` → 200. En Response muestra nombres de campos, vigencia y rol | Angular abre el catálogo |
+| Entra como `admin` | POST `/api/session/login` → 200. En Response muestra nombres de campos, vigencia y rol | Angular abre el catálogo |
+| Abre Inicio y el panel en otra pestaña | GET `/api/session` y GET `/api/session/token` → 200 | Inicio identifica la cuenta y el panel abre con la misma sesión |
 | Envía un producto vacío o con precio cero | Angular muestra mensajes y no envía POST | Corrige los campos en pantalla |
 | Crea el producto a S/ 12.50 | POST `/api/productos` → 201. Muestra Payload, Response y `Location` en Response Headers | Consulta la fila en SQL Server |
 | Busca por nombre y recarga la página | GET `/api/productos?texto=…` → 200. Muestra Query String, Response y encabezado Bearer sin su valor | Reaparece el producto guardado |

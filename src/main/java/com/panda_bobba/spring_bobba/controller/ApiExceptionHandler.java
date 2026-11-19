@@ -5,7 +5,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.*;
-@RestControllerAdvice(assignableTypes={ApiAuthController.class, ProductoApiController.class})
+@RestControllerAdvice(assignableTypes={ApiAuthController.class, BrowserSessionController.class, ProductoApiController.class})
 public class ApiExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> validacion(MethodArgumentNotValidException ex) {

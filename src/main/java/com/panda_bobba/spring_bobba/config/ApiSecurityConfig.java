@@ -1,6 +1,12 @@
 package com.panda_bobba.spring_bobba.config;
 
+import java.io.IOException;
 import java.security.KeyPair;
+import com.panda_bobba.spring_bobba.services.BrowserSessions;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPublicKey;
 import com.nimbusds.jose.jwk.RSAKey;
@@ -17,6 +23,12 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.server.resource.BearerTokenErrors;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
+import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.security.oauth2.server.resource.authentication.*;
 import org.springframework.security.web.SecurityFilterChain;
@@ -53,7 +65,16 @@ public class ApiSecurityConfig {
 
     @Bean
     @Order(1)
-    SecurityFilterChain apiSecurity(HttpSecurity http) throws Exception {
+    SecurityFilterChain browserSessionSecurity(HttpSecurity http) throws Exception {
+        return http.securityMatcher("/api/session/**")
+                .requestCache(cache -> cache.disable())
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .build();
+    }
+
+    @Bean
+    @Order(2)
+    SecurityFilterChain apiSecurity(HttpSecurity http, BrowserSessions sessions) throws Exception {
         var authorities = new JwtGrantedAuthoritiesConverter();
         authorities.setAuthoritiesClaimName("roles");
         authorities.setAuthorityPrefix("");
@@ -68,7 +89,31 @@ public class ApiSecurityConfig {
                     .hasAnyRole("USER", "ADMIN")
                 .requestMatchers("/api/productos/**").hasRole("ADMIN")
                 .anyRequest().denyAll())
-            .oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(converter)));
+            .oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(converter)))
+            .addFilterAfter(browserSessionFilter(sessions), BearerTokenAuthenticationFilter.class);
         return http.build();
+    }
+
+    private OncePerRequestFilter browserSessionFilter(BrowserSessions sessions) {
+        var entryPoint = new BearerTokenAuthenticationEntryPoint();
+        return new OncePerRequestFilter() {
+            @Override
+            protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+                    throws ServletException, IOException {
+                if (SecurityContextHolder.getContext().getAuthentication() instanceof JwtAuthenticationToken auth) {
+                    var binding = auth.getToken().getClaimAsString("browserSession");
+                    if (binding != null) {
+                        var session = sessions.current(request);
+                        if (session == null || !binding.equals(session.binding())) {
+                            SecurityContextHolder.clearContext();
+                            entryPoint.commence(request, response, new OAuth2AuthenticationException(
+                                    BearerTokenErrors.invalidToken("La sesión de navegador ya no es válida")));
+                            return;
+                        }
+                    }
+                }
+                chain.doFilter(request, response);
+            }
+        };
     }
 }

@@ -14,7 +14,7 @@ async function login(page: Page, username: string, password: string) {
   await passwordInput.fill(password);
   await expect(userInput).toHaveValue(username);
   await expect(passwordInput).not.toHaveValue('');
-  const response = apiResponse(page, 'POST', '/api/auth/login');
+  const response = apiResponse(page, 'POST', '/api/session/login');
   await page.getByRole('button', { name: 'Ingresar' }).click();
   expect((await response).status()).toBe(200);
   await expect(page.getByRole('heading', { name: 'Catálogo de productos' })).toBeVisible();
@@ -47,7 +47,7 @@ test('Angular navega, valida, aplica roles y persiste el CRUD mediante Spring', 
   await expect(page).toHaveURL(/#\/acceso$/);
   await page.getByLabel('Usuario').fill('admin');
   await page.getByLabel('Contraseña').fill('clave-incorrecta');
-  const failedLogin = apiResponse(page, 'POST', '/api/auth/login');
+  const failedLogin = apiResponse(page, 'POST', '/api/session/login');
   await page.getByRole('button', { name: 'Ingresar' }).click();
   expect((await failedLogin).status()).toBe(401);
   await expect(page.getByRole('alert')).toContainText('incorrectos');
@@ -132,4 +132,51 @@ test('Angular navega, valida, aplica roles y persiste el CRUD mediante Spring', 
   expect((await removed).status()).toBe(204);
   await expect(card).toHaveCount(0);
   checkSql(name, null);
+});
+
+test('La sesión se verifica en Inicio, se renueva y se revoca en todas las pestañas', async ({ page, context, request }) => {
+  const home = await context.newPage();
+  await home.goto('/inicio');
+  await expect(home.getByRole('link', { name: 'Iniciar sesión' })).toBeVisible();
+  const unprotectedLogin = await page.request.post('/api/session/login', {
+    data: { username: 'admin', password: process.env.DEMO_ADMIN_PASSWORD ?? 'admin123' },
+  });
+  expect(unprotectedLogin.status()).toBe(403);
+  await page.request.get('/api/session/csrf');
+  const guestCookie = (await context.cookies()).find(cookie => cookie.name === 'JSESSIONID');
+
+  await page.goto('#/acceso');
+  await login(page, 'admin', process.env.DEMO_ADMIN_PASSWORD ?? 'admin123');
+  await expect(home.getByRole('link', { name: 'Sesión activa admin' })).toBeVisible();
+  await expect(home.getByRole('link', { name: 'Ir a mi panel' })).toBeVisible();
+  const cookie = (await context.cookies()).find(cookie => cookie.name === 'JSESSIONID');
+  expect(cookie).toMatchObject({ httpOnly: true, sameSite: 'Lax' });
+  expect(guestCookie).toBeDefined();
+  expect(cookie?.value).not.toBe(guestCookie?.value);
+
+  await home.setViewportSize({ width: 390, height: 844 });
+  await home.getByRole('button', { name: 'Abrir navegación' }).click();
+  await expect(home.getByRole('link', { name: 'Sesión activa admin' })).toBeVisible();
+  expect(await home.evaluate(() => document.documentElement.scrollWidth)).toBe(390);
+
+  const otherTab = await context.newPage();
+  const restored = apiResponse(otherTab, 'GET', '/api/session/token');
+  await otherTab.goto(new URL(page.url()).pathname + '#/catalogo');
+  const restoreResponse = await restored;
+  expect(restoreResponse.status()).toBe(200);
+  expect(restoreResponse.headers()['cache-control']).toContain('no-store');
+  const { accessToken } = await restoreResponse.json();
+  await expect(otherTab.getByRole('heading', { name: 'Catálogo de productos' })).toBeVisible();
+  const headers = { Authorization: `Bearer ${accessToken}` };
+  expect((await request.get('/api/productos', { headers })).status()).toBe(401);
+
+  await otherTab.clock.setFixedTime(new Date(Date.now() + 31 * 60_000));
+  const renewed = apiResponse(otherTab, 'GET', '/api/session/token');
+  await otherTab.getByRole('button', { name: 'Buscar' }).click();
+  expect((await renewed).status()).toBe(200);
+
+  await logout(page);
+  await expect(otherTab).toHaveURL(/#\/acceso$/);
+  await expect(home.getByRole('link', { name: 'Iniciar sesión' })).toBeVisible();
+  expect((await page.request.get('/api/productos', { headers })).status()).toBe(401);
 });
