@@ -1,0 +1,39 @@
+<a class="back" routerLink="/productos"><span aria-hidden="true">←</span> Volver al catálogo</a>
+@if (notice) { <p class="notice success" role="status">{{ notice }}</p> }
+@if (loading()) {
+  <p class="panel empty" role="status">Cargando producto…</p>
+} @else if (error()) {
+  <div class="panel empty">
+    <p role="alert">{{ error() }}</p>
+    <button class="button secondary" type="button" (click)="load()">Reintentar</button>
+  </div>
+} @else if (product(); as item) {
+  <article class="panel detail">
+    <div class="detail-photo">
+      <img [src]="item.imagen" alt="" referrerpolicy="no-referrer" (error)="$any($event.target).hidden = true">
+    </div>
+    <div class="detail-body">
+      <p class="eyebrow">{{ item.categoria }}</p>
+      <h1>{{ item.nombre }}</h1>
+      <p>{{ item.descripcion }}</p>
+      <p class="price">{{ item.precio | currency:'PEN':'S/ ':'1.2-2' }}</p>
+      @if (admin()) {
+        <div class="actions">
+          <a class="button primary" [routerLink]="['/productos', item.id, 'editar']">Editar producto</a>
+          <button class="button danger-outline" type="button" (click)="deleteError.set(''); confirmation.showModal()">Eliminar producto</button>
+        </div>
+        <dialog #confirmation aria-labelledby="confirmation-title" (cancel)="deleting() && $event.preventDefault()">
+          <h2 id="confirmation-title">¿Eliminar este producto?</h2>
+          <p><strong>{{ item.nombre }}</strong> desaparecerá del catálogo. Esta acción es permanente.</p>
+          @if (deleteError()) { <p class="notice error" role="alert">{{ deleteError() }}</p> }
+          <div class="actions">
+            <button type="button" class="button secondary" autofocus [disabled]="deleting()" (click)="confirmation.close()">Cancelar</button>
+            <button type="button" class="button danger" [disabled]="deleting()" (click)="delete(confirmation, item)">
+              {{ deleting() ? 'Eliminando…' : 'Confirmar eliminación' }}
+            </button>
+          </div>
+        </dialog>
+      }
+    </div>
+  </article>
+}

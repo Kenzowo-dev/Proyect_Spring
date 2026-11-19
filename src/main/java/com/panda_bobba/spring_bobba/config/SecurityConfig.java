@@ -25,6 +25,7 @@ public class SecurityConfig {
                 // Rutas públicas
                 .requestMatchers("/", "/inicio", "/productos", "/nosotros").permitAll()
                 .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/gestion-catalogo", "/gestion-catalogo/**", "/actuator/health").permitAll()
                 .requestMatchers("/login", "/error").permitAll()
                 .requestMatchers("/panel", "/gestion", "/access-denied").permitAll()
                 

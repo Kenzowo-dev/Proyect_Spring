@@ -27,26 +27,41 @@ class AvanceDosIntegrationTests {
     private String login(String usuario, String clave) throws Exception {
         var result = mvc.perform(post("/api/auth/login").contentType("application/json")
             .content(json.writeValueAsString(Map.of("username",usuario,"password",clave))))
-            .andExpect(status().isOk()).andExpect(jsonPath("tokenType").value("Bearer")).andReturn();
+            .andExpect(status().isOk())
+            .andExpect(header().string("Cache-Control", "no-store"))
+            .andExpect(jsonPath("tokenType").value("Bearer")).andReturn();
         return "Bearer "+json.readTree(result.getResponse().getContentAsString()).get("accessToken").asText();
     }
     private Map<String,Object> datos(String nombre, double precio) {
         return Map.of("nombre",nombre,"descripcion","Producto de prueba","categoria","Bubble Tea","precio",precio,"imagen","/images/oreo.jpg");
     }
     @Test void jwtYRolesRechazanAccesosIncorrectos() throws Exception {
-        mvc.perform(get("/api/productos")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/productos"))
+            .andExpect(status().isUnauthorized())
+            .andExpect(header().string("WWW-Authenticate", "Bearer"))
+            .andExpect(jsonPath("$.message").isString());
         mvc.perform(get("/api/productos").header("Authorization","Bearer incorrecto")).andExpect(status().isUnauthorized());
         mvc.perform(post("/api/auth/login").contentType("application/json").content("{\"username\":\"admin\",\"password\":\"incorrecta\"}"))
             .andExpect(status().isUnauthorized());
         var user = login("user","user123");
+        mvc.perform(get("/api/auth/me").header("Authorization", user))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.username").value("user"))
+            .andExpect(jsonPath("$.roles[0].authority").value("ROLE_USER"));
+        mvc.perform(get("/api/categorias").header("Authorization", user))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0]").value("Bubble Tea"));
         mvc.perform(get("/api/productos").header("Authorization",user)).andExpect(status().isOk());
         mvc.perform(post("/api/productos").header("Authorization",user).contentType("application/json").content(json.writeValueAsString(datos("Sin permiso",10))))
-            .andExpect(status().isForbidden());
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.message").value("Tu rol no permite realizar esta operación."));
         mvc.perform(put("/api/productos/1").header("Authorization",user).contentType("application/json").content(json.writeValueAsString(datos("Sin permiso",10))))
-            .andExpect(status().isForbidden());
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.message").value("Tu rol no permite realizar esta operación."));
         mvc.perform(delete("/api/productos/1").header("Authorization",user)).andExpect(status().isForbidden());
         mvc.perform(patch("/api/productos/precios").header("Authorization",user).contentType("application/json").content("{}"))
-            .andExpect(status().isForbidden());
+            .andExpect(status().isForbidden())
+            .andExpect(jsonPath("$.message").value("Tu rol no permite realizar esta operación."));
         var claims = JwtClaimsSet.builder().issuer("panda-bobba").subject("admin")
             .issuedAt(Instant.now().minusSeconds(3600)).expiresAt(Instant.now().minusSeconds(120))
             .claim("roles",List.of("ROLE_ADMIN")).build();
@@ -79,7 +94,9 @@ class AvanceDosIntegrationTests {
                 .andExpect(status().isOk());
             assertThat(repository.findById(id).orElseThrow().getPriceJPA()).isEqualTo(20);
             mvc.perform(post("/api/productos").header("Authorization",token).contentType("application/json")
-                .content(json.writeValueAsString(datos("Inválido",-1)))).andExpect(status().isBadRequest());
+                .content(json.writeValueAsString(datos("Inválido",-1))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.fieldErrors.precio").value("El precio debe ser mayor que cero"));
             mvc.perform(delete("/api/productos/"+id).header("Authorization",token)).andExpect(status().isNoContent());
             assertThat(repository.existsById(id)).isFalse();
             mvc.perform(get("/api/productos/"+id).header("Authorization",token)).andExpect(status().isNotFound());
@@ -87,6 +104,18 @@ class AvanceDosIntegrationTests {
                 .content(json.writeValueAsString(datos("No recrear",10)))).andExpect(status().isNotFound());
         } finally { repository.deleteById(id); }
     }
+    @Test void catalogoAngularAdmiteEntradasDirectas() throws Exception {
+        mvc.perform(get("/gestion-catalogo"))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/gestion-catalogo/"));
+        for (var ruta : List.of("/", "/acceso", "/productos", "/productos/nuevo",
+                "/productos/42", "/productos/42/editar", "/sin-permiso")) {
+            mvc.perform(get("/gestion-catalogo" + ruta))
+                .andExpect(status().isOk())
+                .andExpect(forwardedUrl("/gestion-catalogo/index.html"));
+        }
+    }
+
     @Test void pantallaDeGestionDisponible() throws Exception {
         mvc.perform(get("/gestion")).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/panel"));
         mvc.perform(get("/panel")).andExpect(status().isOk()).andExpect(view().name("gestion"));

@@ -1,0 +1,67 @@
+<section class="hero" aria-labelledby="catalog-title">
+  <div class="hero-text">
+    <p class="eyebrow">Panda Bobba</p>
+    <h1 id="catalog-title">Catálogo de bebidas</h1>
+    <p>{{ admin() ? 'Organiza el menú, actualiza los precios y mantén los productos al día.' : 'Explora las bebidas y consulta sus precios, ingredientes y categorías.' }}</p>
+    @if (admin()) { <a class="button accent" routerLink="/productos/nuevo">Nuevo producto</a> }
+  </div>
+</section>
+@if (notice) { <p class="notice success" role="status">{{ notice }}</p> }
+
+<section class="catalog" aria-labelledby="inventory-title">
+  <div class="section-heading">
+    <h2 id="inventory-title">Productos</h2>
+    @if (!loading() && !error()) {
+      <span class="count" role="status">{{ visible().length }} de {{ rows().length }}</span>
+    }
+  </div>
+  @if (loading()) {
+    <p class="panel empty" role="status">Cargando productos…</p>
+  } @else if (error()) {
+    <div class="panel empty">
+      <p role="alert">{{ error() }}</p>
+      <button class="button secondary" type="button" (click)="load()">Reintentar</button>
+    </div>
+  } @else if (rows().length === 0) {
+    <div class="panel empty">
+      <h3>Aún no hay productos</h3>
+      <p>{{ admin() ? 'Agrega la primera bebida para empezar a organizar el catálogo.' : 'Los productos aparecerán aquí cuando estén disponibles.' }}</p>
+    </div>
+  } @else {
+    <div class="filters">
+      <div class="field">
+        <label for="query">Buscar productos</label>
+        <input id="query" type="search" [ngModel]="query()" (ngModelChange)="query.set($event)" placeholder="Nombre, descripción o categoría">
+      </div>
+      <div class="field">
+        <label for="category">Categoría</label>
+        <select id="category" [ngModel]="category()" (ngModelChange)="category.set($event)">
+          <option value="">Todas las categorías</option>
+          @for (item of categories(); track item) { <option [value]="item">{{ item }}</option> }
+        </select>
+      </div>
+      @if (query() || category()) { <button class="button quiet" type="button" (click)="clearFilters()">Limpiar filtros</button> }
+    </div>
+    @if (visible().length === 0) {
+      <p class="panel empty">No hay productos que coincidan con estos filtros.</p>
+    } @else {
+      <ul class="product-grid">
+        @for (product of visible(); track product.id) {
+          <li class="panel product-card">
+            <img [src]="product.imagen" alt="" loading="lazy" referrerpolicy="no-referrer"
+              (error)="$any($event.target).hidden = true">
+            <div class="card-body">
+              <p class="eyebrow">{{ product.categoria }}</p>
+              <h3><a [routerLink]="['/productos', product.id]">{{ product.nombre }}</a></h3>
+              <p class="card-description">{{ product.descripcion }}</p>
+              <div class="card-actions">
+                <strong>{{ product.precio | currency:'PEN':'S/ ':'1.2-2' }}</strong>
+                <a [routerLink]="['/productos', product.id]" [attr.aria-label]="'Ver detalle de ' + product.nombre">Ver detalle <span aria-hidden="true">→</span></a>
+              </div>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  }
+</section>
