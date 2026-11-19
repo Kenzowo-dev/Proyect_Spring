@@ -1,2 +1,6 @@
-/target/
-/.data/
+target/
+.data/
+.vscode/
+*.class
+*.log
+.DS_Store

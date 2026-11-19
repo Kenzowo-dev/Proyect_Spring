@@ -1,0 +1,6 @@
+target/
+.git/
+.vscode/
+.data/
+.DS_Store
+*.log

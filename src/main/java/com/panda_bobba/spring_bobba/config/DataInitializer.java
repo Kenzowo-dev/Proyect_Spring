@@ -126,7 +126,13 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void crearUsuarioSiNoExiste(String nombre, String clave, Role rol) {
-        if (clave.isBlank() || userRepository.existsByUsername(nombre)) {
+        if (clave == null || clave.isBlank()) {
+            return;
+        }
+        if (clave.length() < 12) {
+            throw new IllegalStateException("Bootstrap passwords must be at least 12 characters.");
+        }
+        if (userRepository.existsByUsername(nombre)) {
             return;
         }
         var usuario = new User(nombre, passwordEncoder.encode(clave), true);
