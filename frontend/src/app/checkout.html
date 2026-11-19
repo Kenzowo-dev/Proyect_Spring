@@ -1,0 +1,127 @@
+<a class="back" routerLink="/carta"><span aria-hidden="true">←</span> Volver a la carta</a>
+@if (cart.receipt(); as order) {
+  <section class="panel order-receipt" aria-labelledby="receipt-title">
+    <div class="receipt-mark" aria-hidden="true">{{ order.estado === 'CANCELADO' ? '!' : '✓' }}</div>
+    <h1 id="receipt-title">{{ order.estado === 'CANCELADO' ? 'Pedido cancelado' : order.estado === 'ENTREGADO' ? 'Pedido entregado' : 'Pedido recibido' }}</h1>
+    <p class="receipt-number" role="status">Pedido N.º {{ order.id }}</p>
+    @if (order.estado === 'RECIBIDO') {
+      <p>Presenta este número en Panda Bobba para recoger y pagar tu pedido.</p>
+      <p class="receipt-location"><a href="/nosotros#ubicacion">Av. Mansiche 1622, Trujillo</a></p>
+    } @else if (order.estado === 'ENTREGADO') {
+      <p>La tienda ya registró la entrega de este pedido.</p>
+    }
+    <ul class="receipt-lines">
+      @for (line of order.items; track line.productoId) {
+        <li><span>{{ line.cantidad }} × {{ line.nombre }}</span>
+          <strong>{{ line.subtotal | currency:'PEN':'S/ ':'1.2-2' }}</strong></li>
+      }
+    </ul>
+    <div class="order-total"><span>Total</span><strong>{{ order.total | currency:'PEN':'S/ ':'1.2-2' }}</strong></div>
+    <a class="button primary" routerLink="/carta" (click)="cart.dismissReceipt()">Volver a comprar</a>
+  </section>
+} @else {
+  <section aria-labelledby="cart-title">
+    <div class="checkout-heading">
+      <h1 id="cart-title">Tu carrito</h1>
+      @if (cart.count()) { <p>Retiro y pago en tienda</p> }
+    </div>
+    @if (!cart.count()) {
+      <div class="panel empty">
+        <h2>Tu carrito está vacío</h2>
+        <p>Elige una bebida de la carta para empezar tu pedido.</p>
+        <a class="button primary" routerLink="/carta">Ver la carta</a>
+      </div>
+    } @else {
+      @if (cart.notice()) { <p class="notice" role="status">{{ cart.notice() }}</p> }
+      @if (cart.refreshError()) {
+        <div class="notice error">
+          <p role="alert">{{ cart.refreshError() }}</p>
+          <button type="button" class="button secondary" (click)="cart.refresh()">Actualizar productos</button>
+        </div>
+      }
+      <div class="checkout-layout">
+        <section class="panel checkout-panel" aria-labelledby="items-title">
+          <h2 id="items-title">Bebidas de tu pedido</h2>
+          @if (cart.refreshing()) { <p class="purchase-note" role="status">Verificando disponibilidad y precios…</p> }
+          <ul class="cart-lines">
+            @for (line of cart.lines(); track line.id) {
+              <li class="cart-line">
+                <div class="cart-image"><img [src]="line.imagen" alt="" referrerpolicy="no-referrer"
+                  (error)="$any($event.target).hidden = true"></div>
+                <div class="cart-info">
+                  <a [routerLink]="['/carta', line.id]">{{ line.nombre }}</a>
+                  @if (line.disponible) {
+                    <p>{{ line.precio | currency:'PEN':'S/ ':'1.2-2' }} por unidad</p>
+                  } @else {
+                    <p class="unavailable">Retira este producto para continuar. Ya no está en la carta.</p>
+                  }
+                </div>
+                <div class="cart-controls">
+                  @if (!cart.pending()) {
+                    @if (line.disponible) {
+                      <div class="stepper" role="group" [attr.aria-label]="'Cantidad de ' + line.nombre">
+                        <button type="button" [attr.aria-label]="'Quitar una unidad de ' + line.nombre"
+                          [disabled]="line.cantidad <= 1" (click)="cart.setQuantity(line.id, line.cantidad - 1)">−</button>
+                        <span aria-live="polite">{{ line.cantidad }}</span>
+                        <button type="button" [attr.aria-label]="'Agregar una unidad de ' + line.nombre"
+                          [disabled]="line.cantidad >= maxQuantity" (click)="cart.setQuantity(line.id, line.cantidad + 1)">+</button>
+                      </div>
+                    }
+                    <button type="button" class="remove-line" [attr.aria-label]="'Retirar ' + line.nombre"
+                      (click)="cart.setQuantity(line.id, 0)">Retirar</button>
+                  } @else {
+                    <span>{{ line.cantidad }} uds.</span>
+                  }
+                </div>
+                <strong class="line-price">{{ line.precio * line.cantidad | currency:'PEN':'S/ ':'1.2-2' }}</strong>
+              </li>
+            }
+          </ul>
+        </section>
+        <section class="panel checkout-panel checkout-summary" aria-labelledby="summary-title">
+          <h2 id="summary-title">Resumen del pedido</h2>
+          <div class="order-total"><span>Total</span><strong>{{ cart.total() | currency:'PEN':'S/ ':'1.2-2' }}</strong></div>
+          @if (cart.orderError()) { <p class="notice error" role="alert">{{ cart.orderError() }}</p> }
+          @if (!signedIn()) {
+            <div class="checkout-account">
+              <h3>Accede para confirmar tu pedido</h3>
+              <p>Guardaremos los productos de tu carrito mientras creas una cuenta o inicias sesión.</p>
+              <div class="checkout-account-actions">
+                <a class="button primary" routerLink="/registro" [queryParams]="{ volver: '/carrito' }">Crear cuenta</a>
+                <a class="button secondary" routerLink="/acceso" [queryParams]="{ volver: '/carrito' }">Iniciar sesión</a>
+              </div>
+            </div>
+          } @else if (cart.pending()) {
+            @if (cart.busy()) {
+              <p role="status">Confirmando pedido…</p>
+            } @else {
+              <button class="button primary" type="button" (click)="cart.submit()">Reintentar confirmación</button>
+            }
+          } @else {
+            <form [formGroup]="form" (ngSubmit)="confirm()" novalidate>
+              <div class="field">
+                <label for="order-name">Nombre para el retiro</label>
+                <input id="order-name" formControlName="nombre" autocomplete="name" maxlength="100" required
+                  [attr.aria-invalid]="form.controls.nombre.touched && form.controls.nombre.invalid"
+                  aria-describedby="order-name-error">
+                <p class="field-error" id="order-name-error">
+                  @if (form.controls.nombre.touched && form.controls.nombre.invalid) { Ingresa tu nombre. }
+                </p>
+              </div>
+              <div class="field">
+                <label for="order-phone">Teléfono</label>
+                <input id="order-phone" type="tel" formControlName="telefono" autocomplete="tel" maxlength="25" required
+                  [attr.aria-invalid]="form.controls.telefono.touched && form.controls.telefono.invalid"
+                  aria-describedby="order-phone-error">
+                <p class="field-error" id="order-phone-error">
+                  @if (form.controls.telefono.touched && form.controls.telefono.invalid) { Ingresa un teléfono de 7 a 15 dígitos. }
+                </p>
+              </div>
+              <button class="button primary" type="submit" [disabled]="!cart.canSubmit()">Confirmar pedido</button>
+            </form>
+          }
+        </section>
+      </div>
+    }
+  </section>
+}

@@ -108,8 +108,8 @@ class AvanceDosIntegrationTests {
         mvc.perform(get("/gestion-catalogo"))
             .andExpect(status().is3xxRedirection())
             .andExpect(redirectedUrl("/gestion-catalogo/"));
-        for (var ruta : List.of("/", "/acceso", "/productos", "/productos/nuevo",
-                "/productos/42", "/productos/42/editar", "/sin-permiso")) {
+        for (var ruta : List.of("/", "/acceso", "/registro", "/productos", "/productos/nuevo",
+                "/productos/42", "/productos/42/editar", "/sin-permiso", "/carta", "/carta/42", "/carrito")) {
             mvc.perform(get("/gestion-catalogo" + ruta))
                 .andExpect(status().isOk())
                 .andExpect(forwardedUrl("/gestion-catalogo/index.html"));
@@ -120,7 +120,9 @@ class AvanceDosIntegrationTests {
         mvc.perform(get("/gestion")).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/panel"));
         mvc.perform(get("/panel")).andExpect(status().isOk()).andExpect(view().name("gestion"));
         mvc.perform(get("/login")).andExpect(status().isOk()).andExpect(view().name("login"));
-        for (var ruta : List.of("/inicio", "/productos", "/nosotros")) {
+        mvc.perform(get("/productos")).andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/gestion-catalogo/carta"));
+        for (var ruta : List.of("/inicio", "/nosotros")) {
             var html = mvc.perform(get(ruta)).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
             assertThat(html).contains("public-login-button", "href=\"/login\"");
             assertThat(html).doesNotContain("href=\"/gestion\"", "href=\"/admin/productos\"");

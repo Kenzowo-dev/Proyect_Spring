@@ -1,9 +1,11 @@
-<section class="hero" aria-labelledby="catalog-title">
+<section class="hero" [class.store-hero]="storefront" aria-labelledby="catalog-title">
   <div class="hero-text">
-    <p class="eyebrow">Panda Bobba</p>
-    <h1 id="catalog-title">Catálogo de bebidas</h1>
-    <p>{{ admin() ? 'Organiza el menú, actualiza los precios y mantén los productos al día.' : 'Explora las bebidas y consulta sus precios, ingredientes y categorías.' }}</p>
-    @if (admin()) { <a class="button accent" routerLink="/productos/nuevo">Nuevo producto</a> }
+    <h1 id="catalog-title">{{ storefront ? 'Carta de bebidas' : 'Catálogo de bebidas' }}</h1>
+    @if (storefront) {
+      <p>Elige tus bebidas y recoge tu pedido en Panda Bobba.</p>
+    } @else if (admin()) {
+      <a class="button primary" routerLink="/productos/nuevo">Nuevo producto</a>
+    }
   </div>
 </section>
 @if (notice) { <p class="notice success" role="status">{{ notice }}</p> }
@@ -52,11 +54,11 @@
               (error)="$any($event.target).hidden = true">
             <div class="card-body">
               <p class="eyebrow">{{ product.categoria }}</p>
-              <h3><a [routerLink]="['/productos', product.id]">{{ product.nombre }}</a></h3>
+              <h3><a [routerLink]="[base, product.id]">{{ product.nombre }}</a></h3>
               <p class="card-description">{{ product.descripcion }}</p>
               <div class="card-actions">
                 <strong>{{ product.precio | currency:'PEN':'S/ ':'1.2-2' }}</strong>
-                <a [routerLink]="['/productos', product.id]" [attr.aria-label]="'Ver detalle de ' + product.nombre">Ver detalle <span aria-hidden="true">→</span></a>
+                <a [routerLink]="[base, product.id]" [attr.aria-label]="'Ver detalle de ' + product.nombre">Ver detalle <span aria-hidden="true">→</span></a>
               </div>
             </div>
           </li>

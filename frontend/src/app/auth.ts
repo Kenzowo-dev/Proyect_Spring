@@ -23,11 +23,23 @@ export class AuthService {
   readonly session = this.current.asReadonly();
 
   login(username: string, password: string) {
-    return this.http.post<LoginResponse>('/api/auth/login', { username, password }).pipe(
+    return this.openSession('/api/auth/login', username, password);
+  }
+
+  register(username: string, password: string) {
+    return this.openSession('/api/auth/register', username, password);
+  }
+
+  private openSession(endpoint: string, username: string, password: string) {
+    return this.http.post<LoginResponse>(endpoint, { username, password }).pipe(
       tap(({ accessToken, expiresIn, username, roles }) => {
         const session = { accessToken, expiresAt: Date.now() + expiresIn * 1000, username, roles };
-        sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
         this.current.set(session);
+        try {
+          sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+        } catch {
+          // Use the in-memory session when storage is unavailable.
+        }
       }),
     );
   }
@@ -43,7 +55,15 @@ export class AuthService {
 
   logout() {
     this.current.set(null);
-    sessionStorage.removeItem(SESSION_KEY);
+    this.clearStoredSession();
+  }
+
+  private clearStoredSession() {
+    try {
+      sessionStorage.removeItem(SESSION_KEY);
+    } catch {
+      // Browser storage may be unavailable.
+    }
   }
 
   private restore(): Session | null {
@@ -57,9 +77,19 @@ export class AuthService {
     } catch {
       // An invalid stored session can be discarded.
     }
-    sessionStorage.removeItem(SESSION_KEY);
+    this.clearStoredSession();
     return null;
   }
+}
+
+export function storefrontReturnPath(value: string | null): string | null {
+  const path = value?.split(/[?#]/, 1)[0] ?? '';
+  return /^\/(?:carta(?:\/\d+)?|carrito)$/.test(path) ? path : null;
+}
+
+export function managementReturnPath(value: string | null): string | null {
+  const path = value?.split(/[?#]/, 1)[0] ?? '';
+  return /^\/productos(?:\/(?:nuevo|\d+(?:\/editar)?))?$/.test(path) ? path : null;
 }
 
 export const signedIn: CanActivateFn = (_, state) => inject(AuthService).activeSession()
@@ -71,17 +101,22 @@ export const administrator: CanActivateFn = () => inject(AuthService).activeSess
   : inject(Router).createUrlTree(['/sin-permiso']);
 
 export const apiAuthInterceptor: HttpInterceptorFn = (request, next) => {
-  if (!request.url.startsWith('/api/') || request.url === '/api/auth/login') return next(request);
+  if (!request.url.startsWith('/api/') || request.url === '/api/auth/login'
+      || request.url === '/api/auth/register'
+      || request.url === '/api/carta' || request.url.startsWith('/api/carta/')) return next(request);
 
+  const sendingOrder = request.method === 'POST' && request.url === '/api/pedidos';
   const auth = inject(AuthService);
   const router = inject(Router);
   const session = auth.activeSession();
   return next(session ? request.clone({ setHeaders: { Authorization: 'Bearer ' + session.accessToken } }) : request).pipe(
     catchError((error: unknown) => {
-      if (error instanceof HttpErrorResponse && error.status === 401 && auth.session() === session
-          && !router.url.startsWith('/acceso')) {
+      if (error instanceof HttpErrorResponse && error.status === 401 && auth.session() === session) {
         auth.logout();
-        void router.navigate(['/acceso'], { queryParams: { motivo: 'sesion', volver: router.url } });
+        const destination = sendingOrder ? storefrontReturnPath(router.url) : managementReturnPath(router.url);
+        if (destination && (!sendingOrder || destination === '/carrito')) {
+          void router.navigate(['/acceso'], { queryParams: { motivo: 'sesion', volver: destination } });
+        }
       }
       return throwError(() => error);
     }),

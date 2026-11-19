@@ -7,8 +7,6 @@ import com.panda_bobba.spring_bobba.model.ProductoJPA;
 
 public interface ProductoServices {
 
-    List<ProductoJPA> findByCategoryJPA(String categoryJPA);
-
     ProductoJPA findTopByCategoryJPAOrderByPriceJPADesc(String categoryJPA);
 
     

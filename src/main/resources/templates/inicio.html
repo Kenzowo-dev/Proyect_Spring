@@ -7,7 +7,7 @@
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" th:href="@{/css/brand.css}"><link rel="stylesheet" href="/css/editorial.css">
 </head>
@@ -57,7 +57,7 @@
                             <p class="product-text" th:text="${producto.descriptionJPA}">Bebida equilibrada, cremosa y lista para acompañar tu día.</p>
                             <div class="product-footer">
                                 <span class="price">S/ <span th:text="${#numbers.formatDecimal(producto.priceJPA, 1, 'COMMA', 2, 'POINT')}">0.00</span></span>
-                                <a class="text-link" th:href="@{/productos}">Ver carta</a>
+                                <a class="text-link" th:href="@{/gestion-catalogo/carta/{id}(id=${producto.idJPA})}">Ver detalle</a>
                             </div>
                         </div>
                     </article>

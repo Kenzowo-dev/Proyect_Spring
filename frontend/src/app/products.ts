@@ -18,12 +18,12 @@ export class Products {
   private readonly http = inject(HttpClient);
   private readonly endpoint = '/api/productos';
 
-  list() {
-    return this.http.get<Product[]>(this.endpoint);
+  list(storefront = false) {
+    return this.http.get<Product[]>(storefront ? '/api/carta' : this.endpoint);
   }
 
-  get(id: string) {
-    return this.http.get<Product>(this.endpoint + '/' + encodeURIComponent(id));
+  get(id: string, storefront = false) {
+    return this.http.get<Product>((storefront ? '/api/carta' : this.endpoint) + '/' + encodeURIComponent(id));
   }
 
   categories() {

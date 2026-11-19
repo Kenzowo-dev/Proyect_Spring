@@ -1,5 +1,8 @@
 package com.panda_bobba.spring_bobba.model;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -82,6 +85,10 @@ public class ProductoJPA {
 
     public void setPriceJPA(double priceJPA) {
         this.priceJPA = priceJPA;
+    }
+
+    public BigDecimal getPrecioMoneda() {
+        return BigDecimal.valueOf(priceJPA).setScale(2, RoundingMode.HALF_UP);
     }
 
     public String getCategoryJPA() {

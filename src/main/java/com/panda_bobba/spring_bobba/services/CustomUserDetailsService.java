@@ -1,5 +1,7 @@
 package com.panda_bobba.spring_bobba.services;
 
+import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -22,8 +24,9 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // Ahora findByUsername devuelve Optional<User>
+        String normalized = username.toLowerCase(Locale.ROOT);
         User user = userRepository.findByUsername(username)
+                .or(() -> username.equals(normalized) ? Optional.empty() : userRepository.findByUsername(normalized))
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
 
         // Convertir roles a GrantedAuthority

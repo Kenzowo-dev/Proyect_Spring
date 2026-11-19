@@ -1,10 +1,14 @@
 package com.panda_bobba.spring_bobba.services;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
+import jakarta.persistence.criteria.Predicate;
 import com.panda_bobba.spring_bobba.model.ProductoJPA;
 import com.panda_bobba.spring_bobba.repositories.ProductoRepository;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,6 +17,7 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 @Transactional(readOnly = true)
 public class ProductoApiService {
+    private static final Sort ORDEN_CATALOGO = Sort.by("nameJPA", "idJPA");
     private final ProductoRepository repository;
     public ProductoApiService(ProductoRepository repository) { this.repository = repository; }
     public record Datos(@NotBlank(message="Ingresa el nombre") @Size(max=100, message="Usa máximo 100 caracteres") String nombre,
@@ -24,6 +29,11 @@ public class ProductoApiService {
         public static Vista de(ProductoJPA p) {
             return new Vista(p.getIdJPA(), p.getNameJPA(), p.getDescriptionJPA(), p.getCategoryJPA(), p.getPriceJPA(), p.getImageURLJPA());
         }
+
+        public static Vista deCarta(ProductoJPA p) {
+            return new Vista(p.getIdJPA(), p.getNameJPA(), p.getDescriptionJPA(), p.getCategoryJPA(),
+                p.getPrecioMoneda().doubleValue(), p.getImageURLJPA());
+        }
     }
     public record Cambio(@NotNull @Positive Long id, @NotNull @Positive Double precio) {}
     public record Lote(@NotEmpty @Size(max=50) List<@NotNull @Valid Cambio> cambios) {}
@@ -33,8 +43,34 @@ public class ProductoApiService {
             || (maximo != null && (!Double.isFinite(maximo) || maximo < 0))
             || (minimo != null && maximo != null && minimo > maximo))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Rango de precios inválido");
-        return repository.buscar(categoria, texto, minimo, maximo).stream().map(Vista::de).toList();
+        return repository.findAll((producto, query, criteria) -> {
+            List<Predicate> filtros = new ArrayList<>();
+            if (categoria != null && !categoria.isBlank()) {
+                filtros.add(criteria.equal(producto.get("categoryJPA"), categoria));
+            }
+            if (texto != null && !texto.isBlank()) {
+                var literal = texto.toLowerCase(Locale.ROOT)
+                    .replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+                filtros.add(criteria.like(criteria.lower(producto.get("nameJPA")), "%" + literal + "%", '\\'));
+            }
+            if (minimo != null) {
+                filtros.add(criteria.ge(producto.get("priceJPA"), minimo));
+            }
+            if (maximo != null) {
+                filtros.add(criteria.le(producto.get("priceJPA"), maximo));
+            }
+            return criteria.and(filtros.toArray(Predicate[]::new));
+        }, ORDEN_CATALOGO).stream().map(Vista::de).toList();
     }
+
+    public List<Vista> carta() {
+        return repository.findAll(ORDEN_CATALOGO).stream().map(Vista::deCarta).toList();
+    }
+
+    public Vista detalleCarta(Long id) {
+        return Vista.deCarta(entidad(id));
+    }
+
     private ProductoJPA entidad(Long id) {
         return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado"));
     }

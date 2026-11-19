@@ -12,7 +12,11 @@ public class AngularCatalogController {
 
     @GetMapping({
         "/gestion-catalogo/",
+        "/gestion-catalogo/carta",
+        "/gestion-catalogo/carta/{id:[0-9]+}",
+        "/gestion-catalogo/carrito",
         "/gestion-catalogo/acceso",
+        "/gestion-catalogo/registro",
         "/gestion-catalogo/productos",
         "/gestion-catalogo/productos/nuevo",
         "/gestion-catalogo/productos/{id:[0-9]+}",
