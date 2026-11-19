@@ -2,9 +2,12 @@ package com.panda_bobba.spring_bobba.controller;
 
 import java.time.Instant;
 import java.util.Map;
+import com.panda_bobba.spring_bobba.config.ApiSecurityConfig;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -24,7 +27,7 @@ public class ApiAuthController {
     public record Login(@NotBlank String username, @NotBlank String password) {}
 
     @PostMapping("/login")
-    public Map<String, Object> login(@Valid @RequestBody Login login) {
+    public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody Login login) {
         Authentication auth;
         try {
             auth = manager.authenticate(new UsernamePasswordAuthenticationToken(login.username(), login.password()));
@@ -33,11 +36,12 @@ public class ApiAuthController {
         }
         var now = Instant.now();
         var roles = auth.getAuthorities().stream().map(a -> a.getAuthority()).toList();
-        var claims = JwtClaimsSet.builder().issuer("panda-bobba").subject(auth.getName())
+        var claims = JwtClaimsSet.builder().issuer(ApiSecurityConfig.ISSUER).subject(auth.getName())
             .issuedAt(now).expiresAt(now.plusSeconds(1800)).claim("roles", roles).build();
         var token = encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
-        return Map.of("accessToken", token, "tokenType", "Bearer", "expiresIn", 1800,
-            "username", auth.getName(), "roles", roles);
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(Map.of(
+            "accessToken", token, "tokenType", "Bearer", "expiresIn", 1800,
+            "username", auth.getName(), "roles", roles));
     }
 
     @GetMapping("/me")

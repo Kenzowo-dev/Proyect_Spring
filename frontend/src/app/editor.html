@@ -1,0 +1,67 @@
+<a class="back" [routerLink]="cancel"><span aria-hidden="true">←</span> Volver</a>
+<section class="panel editor" aria-labelledby="editor-title">
+  <div class="editor-heading">
+    <p class="eyebrow">Administración del catálogo</p>
+    <h1 id="editor-title">{{ id === null ? 'Nuevo producto' : 'Editar producto' }}</h1>
+    <p>Completa la ficha que se mostrará en el catálogo. Todos los campos son obligatorios.</p>
+  </div>
+  @if (loading()) {
+    <p role="status">Cargando datos del producto…</p>
+  } @else if (loadError()) {
+    <p class="notice error" role="alert">{{ loadError() }}</p>
+    <button type="button" class="button secondary" (click)="loadProduct()">Reintentar</button>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <fieldset [disabled]="saving()">
+        <div class="field">
+          <label for="nombre">Nombre</label>
+          <input id="nombre" formControlName="nombre" maxlength="100" required
+            aria-describedby="nombre-error" [attr.aria-invalid]="!!feedback('nombre')">
+          <p class="field-error" id="nombre-error">{{ feedback('nombre') }}</p>
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="categoria">Categoría</label>
+            <input id="categoria" formControlName="categoria" list="category-options" maxlength="50" required
+              aria-describedby="categoria-error" [attr.aria-invalid]="!!feedback('categoria')">
+            <datalist id="category-options">
+              @for (category of categories(); track category) { <option [value]="category"></option> }
+            </datalist>
+            <p class="field-error" id="categoria-error">{{ feedback('categoria') }}</p>
+          </div>
+          <div class="field">
+            <label for="precio">Precio (S/)</label>
+            <input id="precio" formControlName="precio" type="number" inputmode="decimal" min="0.01" step="0.01" required
+              aria-describedby="precio-error" [attr.aria-invalid]="!!feedback('precio')">
+            <p class="field-error" id="precio-error">{{ feedback('precio') }}</p>
+          </div>
+        </div>
+        <div class="field">
+          <label for="descripcion">Descripción</label>
+          <textarea id="descripcion" formControlName="descripcion" maxlength="255" rows="4" required
+            aria-describedby="descripcion-error" [attr.aria-invalid]="!!feedback('descripcion')"></textarea>
+          <p class="field-error" id="descripcion-error">{{ feedback('descripcion') }}</p>
+        </div>
+        <div class="field">
+          <label for="imagen">Imagen</label>
+          <input id="imagen" formControlName="imagen" placeholder="/images/cafelate.webp" maxlength="255" required
+            aria-describedby="imagen-help imagen-error" [attr.aria-invalid]="!!feedback('imagen')">
+          <small id="imagen-help">Pega un enlace HTTPS o una ruta local, por ejemplo /images/cafelate.webp.</small>
+          <p class="field-error" id="imagen-error">{{ feedback('imagen') }}</p>
+        </div>
+      </fieldset>
+      @if (saveError()) {
+        <div class="notice error" role="alert">
+          {{ saveError() }}
+          @if (serverErrors().length) {
+            <ul>@for (entry of serverErrors(); track $index) { <li>{{ entry }}</li> }</ul>
+          }
+        </div>
+      }
+      <div class="actions">
+        <button class="button primary" type="submit" [disabled]="saving()">{{ saving() ? 'Guardando…' : 'Guardar producto' }}</button>
+        <a class="button secondary" [routerLink]="cancel">Cancelar</a>
+      </div>
+    </form>
+  }
+</section>
