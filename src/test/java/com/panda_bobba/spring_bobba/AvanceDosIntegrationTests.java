@@ -88,12 +88,13 @@ class AvanceDosIntegrationTests {
         } finally { repository.deleteById(id); }
     }
     @Test void pantallaDeGestionDisponible() throws Exception {
+        mvc.perform(get("/app/")).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/app/index.html"));
         mvc.perform(get("/gestion")).andExpect(status().is3xxRedirection()).andExpect(redirectedUrl("/panel"));
         mvc.perform(get("/panel")).andExpect(status().isOk()).andExpect(view().name("gestion"));
         mvc.perform(get("/login")).andExpect(status().isOk()).andExpect(view().name("login"));
         for (var ruta : List.of("/inicio", "/productos", "/nosotros")) {
             var html = mvc.perform(get(ruta)).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-            assertThat(html).contains("public-login-button", "href=\"/login\"");
+            assertThat(html).contains("public-login-button", "href=\"/app/\"");
             assertThat(html).doesNotContain("href=\"/gestion\"", "href=\"/admin/productos\"");
         }
     }

@@ -1,0 +1,71 @@
+<h1>Catálogo de productos</h1>
+<form class="filters card" [formGroup]="filters" (ngSubmit)="load()">
+  <label>Nombre <input formControlName="texto"></label>
+  <label>Categoría <input formControlName="categoria"></label>
+  <label>Precio mínimo <input formControlName="minimo" type="number" step="any"></label>
+  <label>Precio máximo <input formControlName="maximo" type="number" step="any"></label>
+  <button [disabled]="busy()">Buscar</button>
+</form>
+@if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+@if (feedback()) { <p role="status">{{ feedback() }}</p> }
+@if (busy()) { <p role="status">Procesando…</p> }
+@if (deleting(); as product) {
+  <section class="card confirmation" aria-label="Confirmar eliminación">
+    <p>¿Eliminar «{{ product.nombre }}»?</p>
+    <button class="danger" [disabled]="busy()" (click)="remove(product)">Confirmar eliminación</button>
+    <button class="secondary" [disabled]="busy()" (click)="deleting.set(null)">Cancelar</button>
+  </section>
+}
+<div class="products">
+  @for (product of products(); track product.id) {
+    <article class="card product">
+      <img [src]="product.imagen" alt="" loading="lazy">
+      <div class="product-body">
+        <p class="category">{{ product.categoria }}</p>
+        <h2>{{ product.nombre }}</h2>
+        <p>{{ product.descripcion }}</p>
+        <strong>{{ product.precio | currency:'PEN':'S/ ' }}</strong>
+        @if (auth.admin()) {
+          <div class="actions">
+            <a [routerLink]="['/catalogo', product.id, 'editar']">Editar</a>
+            <button class="danger" [disabled]="busy()" (click)="deleting.set(product)">Eliminar</button>
+          </div>
+          <label>Nuevo precio en lote
+            <input type="number" step="any" #price [disabled]="busy()" [value]="drafts()[product.id] ?? ''"
+              (input)="setPrice(product.id, price.value)">
+          </label>
+        }
+      </div>
+    </article>
+  } @empty {
+    @if (!busy() && !error()) { <p>No se encontraron productos.</p> }
+  }
+</div>
+@if (auth.admin() && changes().length) {
+  <section class="card checks">
+    <h2>Precios en lote</h2>
+    <p>{{ changes().length }} cambios pendientes.</p>
+    @if (preview()) {
+      <ul>
+        @for (change of changes(); track change.id) {
+          <li>Producto #{{ change.id }} · {{ change.precio | currency:'PEN':'S/ ' }}</li>
+        }
+      </ul>
+      <button [disabled]="busy()" (click)="savePrices()">Confirmar precios</button>
+    } @else {
+      <button [disabled]="busy()" (click)="previewPrices()">Revisar cambios</button>
+    }
+    <button class="secondary" [disabled]="busy()" (click)="drafts.set({}); preview.set(false)">Descartar</button>
+  </section>
+}
+<details class="card checks">
+  <summary>Comprobar acceso a la API</summary>
+  <div class="actions">
+    <button class="secondary" [disabled]="checking()" (click)="checkAccess('missing')">Consultar sin token</button>
+    <button class="secondary" [disabled]="checking()" (click)="checkAccess('invalid')">Consultar con token inválido</button>
+    @if (!auth.admin()) {
+      <button class="secondary" [disabled]="checking()" (click)="checkAccess('role')">Comprobar permiso de escritura</button>
+    }
+  </div>
+  <p role="status">{{ checkResult() }}</p>
+</details>

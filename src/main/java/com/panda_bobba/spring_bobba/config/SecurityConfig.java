@@ -24,7 +24,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
                 // Rutas públicas
                 .requestMatchers("/", "/inicio", "/productos", "/nosotros").permitAll()
-                .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/css/**", "/js/**", "/images/**", "/app", "/app/**").permitAll()
                 .requestMatchers("/login", "/error").permitAll()
                 .requestMatchers("/panel", "/gestion", "/access-denied").permitAll()
                 

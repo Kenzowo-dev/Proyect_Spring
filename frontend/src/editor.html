@@ -1,0 +1,22 @@
+<section class="card editor">
+  <a routerLink="/catalogo">Volver al catálogo</a>
+  <h1>{{ id === undefined ? 'Nuevo producto' : 'Editar producto' }}</h1>
+  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  @if (loaded()) {
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <label>Nombre <input formControlName="nombre" maxlength="100"></label>
+      @if (form.controls.nombre.touched && form.controls.nombre.invalid) { <p class="error">Ingresa un nombre de hasta 100 caracteres.</p> }
+      <label>Descripción <textarea formControlName="descripcion" maxlength="255" rows="3"></textarea></label>
+      @if (form.controls.descripcion.touched && form.controls.descripcion.invalid) { <p class="error">Ingresa una descripción de hasta 255 caracteres.</p> }
+      <label>Categoría <input formControlName="categoria" maxlength="50" list="categories"></label>
+      <datalist id="categories"><option value="Caliente"></option><option value="Frío"></option><option value="Bubble Tea"></option></datalist>
+      @if (form.controls.categoria.touched && form.controls.categoria.invalid) { <p class="error">Ingresa una categoría de hasta 50 caracteres.</p> }
+      <label>Precio en soles <input type="number" step="any" formControlName="precio"></label>
+      @if (form.controls.precio.touched && form.controls.precio.invalid) { <p class="error">El precio debe ser mayor que cero.</p> }
+      <label>Imagen <input formControlName="imagen" maxlength="255" aria-describedby="image-help"></label>
+      <small id="image-help">Usa una ruta /images/ o una URL HTTPS, sin espacios.</small>
+      @if (form.controls.imagen.touched && form.controls.imagen.invalid) { <p class="error">Ingresa una ruta de imagen válida.</p> }
+      <button [disabled]="busy()">Guardar producto</button>
+    </form>
+  } @else if (busy()) { <p role="status">Cargando producto…</p> }
+</section>

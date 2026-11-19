@@ -1,5 +1,3 @@
 [build]
-command = "./mvnw -B -DskipTests package"
-
-[start]
-command = "java -jar target/*.jar"
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"

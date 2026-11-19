@@ -1,216 +1,57 @@
-# Panda Bobba - Proyecto Spring Boot
+# Panda Bobba
 
-## Segundo avance: semana 10
+Aplicación web para una tienda de bubble tea. El acceso desde el sitio público abre el catálogo Angular. Spring Boot expone la API REST, aplica JWT y roles, y guarda los productos en SQL Server mediante JPA.
 
-El sitio público muestra Inicio, Productos y Nosotros, con un botón verde para iniciar sesión. El acceso en `/login` abre `/panel`, que integra el nuevo diseño de gestión, CRUD JSON, búsqueda JPQL y actualización transaccional de precios con roles USER/ADMIN. Consulta [la evaluación completa y la guía de los doce pasos F12](docs/AVANCE_2.md) para preparar la exposición.
+- [Informe final y sustentación técnica](docs/INFORME_FINAL.md)
+- [Guion de demostración con DevTools y SQL Server](docs/DEMOSTRACION_FINAL.md)
+- [Avance 2](docs/AVANCE_2.md), con la evidencia histórica del panel anterior.
 
-Verificación automatizada: `mvn test`. Las pruebas usan H2; la aplicación normal usa SQL Server.
+## Ejecutar en local
 
-## Descripción
-Aplicación web informativa para la tienda de bubble tea "Panda Bobba". Proyecto desarrollado con Spring Boot que incluye gestión completa de productos con operaciones CRUD, validaciones, y sistema de seguridad con autenticación y autorización.
+Requisitos: Node.js 22.12 o posterior dentro de la serie 22, JDK 17, Maven 3.9 y una instancia accesible de SQL Server.
 
-## Tecnologías Utilizadas
+1. Crea la base `PandaBobbaBD` y configura un usuario con permisos sobre esa base. En una base nueva, Hibernate crea las tablas al arrancar.
 
-### Backend
-- **Java 17 o superior** (compilación para Java 17)
-- **Spring Boot 3.5.7**
-- **Spring Data JPA** con Hibernate
-- **Spring Validation** para validación de datos
-- **Spring Security** para autenticación y autorización
-- **SQL Server** como base de datos
-- **Spring Security OAuth2 Resource Server** para validar JWT RS256
+   ```sql
+   CREATE DATABASE PandaBobbaBD;
+   ```
 
-### Frontend
-- **Thymeleaf** como motor de plantillas
-- **Bootstrap 5.3.3** para diseño responsivo
-- **Bootstrap Icons** para iconografía
-- **HTML5, CSS3, JavaScript**
+2. Configura las variables en la terminal o el IDE. Los valores de ejemplo de las cuentas se eligen localmente.
 
-## Características Implementadas
+   | Variable | Valor |
+   | --- | --- |
+   | `SPRING_DATASOURCE_URL` | `jdbc:sqlserver://localhost:1433;databaseName=PandaBobbaBD;encrypt=true;trustServerCertificate=true` para desarrollo local |
+   | `SPRING_DATASOURCE_USERNAME` | Usuario de SQL Server |
+   | `SPRING_DATASOURCE_PASSWORD` | Contraseña de SQL Server |
+   | `DEMO_ADMIN_PASSWORD` | Contraseña inicial de `admin` |
+   | `DEMO_USER_PASSWORD` | Contraseña inicial de `user` |
+   | `PORT` | Puerto del servidor. Valor predeterminado 8080 |
 
-### ✅ CRUD Completo
-- **Crear** productos nuevos con validación
-- **Leer** productos por categorías
-- **Actualizar** productos existentes
-- **Eliminar** productos con confirmación
+   Las contraseñas iniciales se aplican al crear cada cuenta. Una cuenta existente conserva su contraseña y sus roles. En Bash o zsh usa `export NOMBRE='valor'`. En PowerShell usa `$env:NOMBRE = 'valor'`.
 
-### ✅ Spring Validator
-- Validaciones completas en todas las entidades
-- Manejo de errores en controladores con `@Valid` y `BindingResult`
-- Mensajes de error personalizados en formularios
+3. Desde la raíz del repositorio, compila Angular y levanta Spring.
 
-### ✅ Spring Security
-- Autenticación basada en base de datos
-- Autorización con roles: `ROLE_ADMIN` y `ROLE_USER`
-- Protección de rutas administrativas
-- Página de login personalizada
-- Encriptación de contraseñas con BCrypt
+   ```bash
+   npm --prefix frontend ci
+   npm --prefix frontend run build
+   mvn spring-boot:run
+   ```
 
-### ✅ Estructura del Proyecto
-- Separación en capas: Controller, Service, Repository, Model
-- Uso correcto de anotaciones de Spring
-- Configuración centralizada
+4. Abre `http://localhost:8080/app/` o entra en `http://localhost:8080/inicio` y pulsa **Iniciar sesión**. Para desarrollo con recarga automática, ejecuta `npm --prefix frontend start` y usa el puerto 4200. El proxy de desarrollo apunta al backend en 8080.
 
-## Requisitos Previos
+## Pruebas
 
-1. **Java JDK 17 o superior** instalado
-2. **SQL Server** instalado y ejecutándose en el puerto 1433
-3. **Apache Maven** instalado y disponible en PATH
+`mvn test` verifica la API con H2, incluido el rollback del lote y los controles JWT. Con Spring en ejecución y las variables de las cuentas disponibles en la terminal, instala Chromium con `npx playwright install chromium` y ejecuta `npm run test:e2e` desde `frontend`. La prueba usa el backend real y, cuando `E2E_SQL_CONTAINER` apunta al contenedor de la base de pruebas, confirma las filas mediante consultas SQL independientes.
 
-## Configuración de Base de Datos
+El workflow `Angular, Spring Boot y SQL Server` crea una instancia SQL Server temporal, construye la imagen de la aplicación, ejecuta las pruebas Spring y corre el recorrido de Chromium con las comprobaciones SQL activadas.
 
-### Paso 1: Crear la base de datos
-Ejecuta el siguiente comando en SQL Server Management Studio y configura un usuario con acceso a esa base:
+## Desplegar
 
-```sql
-CREATE DATABASE PandaBobbaBD;
-```
+El `Dockerfile` compila Angular, lo empaqueta en el JAR de Spring y genera la imagen de ejecución. `railway.toml` configura Railway para construir esa imagen.
 
-### Paso 2: Configurar credenciales
-Edita el archivo `src/main/resources/application.properties` si es necesario:
-
-```properties
-spring.datasource.url=jdbc:sqlserver://localhost:1433;databaseName=PandaBobbaBD;encrypt=true;trustServerCertificate=true
-spring.datasource.username=TU_USUARIO_SQL_SERVER
-spring.datasource.password=TU_CLAVE_SQL_SERVER
-```
-
-**Nota:** Las tablas se crearán automáticamente al ejecutar la aplicación gracias a Hibernate.
-
-## Ejecución del Proyecto
-
-### Opción 1: Desde la carpeta del proyecto
-
-#### En Windows:
 ```bash
-mvn spring-boot:run
+docker build -t panda-bobba .
+docker run --rm -p 8080:8080 --env-file .env panda-bobba
 ```
 
-#### En Linux/Mac:
-```bash
-mvn spring-boot:run
-```
-
-### Opción 2: Usando Maven instalado
-```bash
-mvn spring-boot:run
-```
-
-### Opción 3: Desde IDE (IntelliJ IDEA, Eclipse, VS Code)
-1. Importar el proyecto como proyecto Maven
-2. Ejecutar la clase `SpringBobbaApplication.java`
-
-## Acceso a la Aplicación
-
-Una vez iniciada la aplicación, accede desde el navegador:
-
-- **Página principal:** http://localhost:8080/
-- **Panel con gestión de catálogo:** http://localhost:8080/panel
-- **Productos:** http://localhost:8080/productos
-- **Nosotros:** http://localhost:8080/nosotros
-- **Login:** http://localhost:8080/login
-- **Acceso al panel:** inicia sesión; ADMIN puede gestionar y USER solo consultar
-
-## Usuarios de Prueba
-
-El sistema crea automáticamente dos usuarios al iniciar por primera vez:
-
-| Usuario | Contraseña | Rol | Permisos |
-|---------|-----------|-----|----------|
-| `admin` | `admin123` | ROLE_ADMIN | Acceso completo al panel de administración |
-| `user` | `user123` | ROLE_USER | Solo visualización de páginas públicas |
-
-## Estructura de Directorios
-
-```
-spring_bobba/
-├── src/
-│   ├── main/
-│   │   ├── java/com/panda_bobba/spring_bobba/
-│   │   │   ├── config/           # Configuraciones (Security, DataInitializer)
-│   │   │   ├── controller/       # Controladores web
-│   │   │   ├── model/            # Entidades JPA
-│   │   │   ├── repositories/     # Interfaces de repositorio
-│   │   │   ├── services/         # Capa de servicios
-│   │   │   └── SpringBobbaApplication.java
-│   │   └── resources/
-│   │       ├── templates/        # Vistas Thymeleaf
-│   │       ├── static/           # CSS, JS, imágenes
-│   │       └── application.properties
-│   └── test/
-├── pom.xml
-└── README.md
-```
-
-## Funcionalidades por Rol
-
-### Usuarios No Autenticados (Público)
-- ✅ Ver página de inicio
-- ✅ Ver catálogo de productos
-- ✅ Ver página "Nosotros"
-- ✅ Acceder a login
-
-### ROLE_USER
-- ✅ Todas las funcionalidades públicas
-- ❌ No puede acceder al panel de administración
-
-### ROLE_ADMIN
-- ✅ Todas las funcionalidades públicas
-- ✅ Acceso al panel de administración
-- ✅ Crear nuevos productos
-- ✅ Editar productos existentes
-- ✅ Eliminar productos
-
-## Rutas Protegidas
-
-| Ruta | Acceso |
-|------|--------|
-| `/`, `/productos`, `/nosotros` | Público |
-| `/login` | Público |
-| `/admin/**` | Solo ROLE_ADMIN |
-
-## Validaciones Implementadas
-
-### Entidad ProductoJPA
-- **Nombre:** No vacío, máximo 100 caracteres
-- **Descripción:** No vacía, máximo 255 caracteres
-- **Categoría:** No vacía, máximo 50 caracteres
-- **Precio:** No nulo, debe ser positivo
-- **URL de Imagen:** No vacía
-
-Los errores de validación se muestran en los formularios con mensajes específicos.
-
-## Solución de Problemas
-
-### Error de conexión a SQL Server
-- Verifica que SQL Server esté ejecutándose y que TCP/IP esté habilitado en el puerto 1433
-- Confirma que la base de datos `PandaBobbaBD` existe
-- Revisa las credenciales en `application.properties`
-
-### Error de puerto 8080 ocupado
-Cambia el puerto en `application.properties`:
-```properties
-server.port=8081
-```
-
-### Error al compilar
-Limpia y recompila el proyecto:
-```bash
-mvn clean install
-```
-
-## Criterios de Evaluación Cumplidos
-
-| Criterio | Nivel | Cumplimiento |
-|----------|-------|--------------|
-| **Uso de Spring Boot** | Excelente (4/4) | ✅ Proyecto bien estructurado, anotaciones completas |
-| **Conexión con Base de Datos** | Excelente (4/4) | ✅ CRUD completo y optimizado |
-| **Uso de Spring Validator** | Excelente (4/4) | ✅ Validaciones completas con manejo de errores |
-| **Implementación de Spring Security** | Excelente (4/4) | ✅ Autenticación, autorización y roles configurados |
-| **Publicación en la Nube** | N/A | ⚠️ Excluido según instrucciones |
-
-## Autor
-Proyecto desarrollado para el curso de Marcos de Desarrollo Web.
-
-## Licencia
-Este proyecto es de uso académico.
+En Docker, la URL JDBC debe alcanzar SQL Server desde el contenedor. En Railway, configura las mismas variables en el servicio, usa un servidor SQL accesible desde Railway con TLS y un certificado confiable, genera el dominio y abre `/app/`. Utiliza una base de demostración y contraseñas propias para las cuentas de la sustentación.
