@@ -43,7 +43,7 @@ class AvanceDosIntegrationTests {
         mvc.perform(get("/api/productos").header("Authorization","Bearer incorrecto")).andExpect(status().isUnauthorized());
         mvc.perform(post("/api/auth/login").contentType("application/json").content("{\"username\":\"admin\",\"password\":\"incorrecta\"}"))
             .andExpect(status().isUnauthorized());
-        var user = login("user","user123");
+        var user = login("user","user12345678");
         mvc.perform(get("/api/auth/me").header("Authorization", user))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.username").value("user"))
@@ -67,12 +67,12 @@ class AvanceDosIntegrationTests {
             .claim("roles",List.of("ROLE_ADMIN")).build();
         var expired = encoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
         mvc.perform(get("/api/productos").header("Authorization","Bearer "+expired)).andExpect(status().isUnauthorized());
-        var token = login("admin","admin123");
+        var token = login("admin","admin12345678");
         var altered = token.substring(0,token.lastIndexOf('.')+1)+"AAAA";
         mvc.perform(get("/api/productos").header("Authorization",altered)).andExpect(status().isUnauthorized());
     }
     @Test void crudConsultaYTransaccionPersistenYRevierten() throws Exception {
-        var token = login("admin","admin123");
+        var token = login("admin","admin12345678");
         var result = mvc.perform(post("/api/productos").header("Authorization",token).contentType("application/json")
             .content(json.writeValueAsString(datos("Prueba avance",15))))
             .andExpect(status().isCreated()).andExpect(header().exists("Location")).andReturn();
