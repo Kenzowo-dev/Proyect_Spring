@@ -34,10 +34,10 @@ Ejecuta el backend con `mvn spring-boot:run "-Dspring-boot.run.profiles=demo"`. 
 
 El servicio debe usar la raíz del repositorio como **Build Path** (`/`) y el tipo **Dockerfile**. El Dockerfile compila Angular y Spring Boot y ejecuta las pruebas Maven durante el build. La aplicación escucha en `PORT` (8080 por defecto).
 
-Crea primero una base de datos SQL Server accesible desde la red Docker y configura estos secretos/variables en el servicio de Dokploy:
+Crea primero una base de datos PostgreSQL accesible desde la red Docker y configura estos secretos/variables en el servicio `frontend` de Dokploy:
 
-- `SPRING_DATASOURCE_URL`: URL JDBC completa de SQL Server.
-- `SPRING_DATASOURCE_USERNAME` y `SPRING_DATASOURCE_PASSWORD`: usuario con permisos sobre `PandaBobbaBD`.
+- `SPRING_DATASOURCE_URL`: `jdbc:postgresql://<host-interno-postgres>:5432/<base>`.
+- `SPRING_DATASOURCE_USERNAME` y `SPRING_DATASOURCE_PASSWORD`: usuario de PostgreSQL con permisos sobre la base.
 - `PANDA_BOOTSTRAP_ADMIN_PASSWORD`: contraseña de al menos 12 caracteres para crear el usuario inicial `admin` si aún no existe.
 - `PANDA_BOOTSTRAP_USER_PASSWORD`: contraseña de al menos 12 caracteres para crear el usuario inicial `user` si aún no existe; es opcional.
 
