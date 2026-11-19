@@ -83,7 +83,11 @@ public class ApiSecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(a -> a
-                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/carta", "/api/carta/*").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/pedidos").hasAnyRole("USER", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/pedidos").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/api/pedidos/*").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/productos", "/api/productos/*", "/api/categorias", "/api/auth/me")
                     .hasAnyRole("USER", "ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/productos").hasRole("ADMIN")

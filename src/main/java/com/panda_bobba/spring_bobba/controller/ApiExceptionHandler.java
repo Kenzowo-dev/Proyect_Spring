@@ -13,7 +13,8 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice(assignableTypes = {
-    ApiAuthController.class, CategoriaApiController.class, ProductoApiController.class
+    ApiAuthController.class, CartaApiController.class, CategoriaApiController.class, PedidoApiController.class,
+    ProductoApiController.class
 })
 public class ApiExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -21,6 +22,10 @@ public class ApiExceptionHandler {
         Map<String, String> fields = new LinkedHashMap<>();
         ex.getBindingResult().getFieldErrors().forEach(error ->
             fields.putIfAbsent(error.getField(), error.getDefaultMessage()));
+        return invalidFields(fields);
+    }
+
+    static ResponseEntity<ValidationError> invalidFields(Map<String, String> fields) {
         var errors = fields.entrySet().stream()
             .map(error -> error.getKey() + ": " + error.getValue())
             .toList();

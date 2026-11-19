@@ -1,6 +1,6 @@
 # Panda Bobba
 
-Panda Bobba permite consultar el catálogo de bebidas y administrar sus fichas. Angular ofrece la experiencia de gestión, Spring Boot aplica permisos y validaciones en la API REST, y JPA guarda los cambios en la base de datos. El sitio público y el panel Thymeleaf del avance anterior siguen disponibles.
+Panda Bobba ofrece una carta pública para consultar bebidas. Los clientes pueden crear una cuenta y hacer pedidos para recojo con pago en tienda. El panel de administración permite actualizar los productos y gestionar los pedidos. Spring Boot y JPA guardan el catálogo y los pedidos en PostgreSQL.
 
 ## Demostración local
 
@@ -11,20 +11,18 @@ node scripts/package-demo.mjs
 java -jar target/spring_bobba-0.0.1-SNAPSHOT.jar --spring.profiles.active=demo
 ```
 
-Abre [el catálogo Angular](http://127.0.0.1:8080/gestion-catalogo/) y elige una cuenta de demostración.
+Abre [la carta pública](http://127.0.0.1:8080/productos) para ver las fichas. Agrega una bebida al carrito y selecciona **Crear cuenta** o **Iniciar sesión** para confirmar el pedido. Para administrar la tienda, abre [el panel](http://127.0.0.1:8080/panel) e inicia sesión con una cuenta de demostración.
 
 | Cuenta | Contraseña local | Permisos |
 |---|---|---|
-| `admin` | `admin123` | Consultar, crear, editar y eliminar productos |
-| `user` | `user123` | Consultar el catálogo y el detalle |
+| `admin` | `admin12345678` | Administrar productos, precios y pedidos |
+| `user` | `user12345678` | Hacer pedidos para recojo |
 
 El perfil `demo` escucha en `127.0.0.1` y guarda la base H2 en `.data/panda-bobba.mv.db`. Reinicia el mismo JAR desde la misma carpeta para volver a abrir la base. Puedes aislar otra ejecución con `PANDA_DEMO_DB_PATH` (ruta sin extensión). Si el puerto 8080 está ocupado, añade `--server.port=8089` al comando de Java.
 
-El catálogo público está en [Inicio](http://127.0.0.1:8080/) y el panel anterior en [Panel Thymeleaf](http://127.0.0.1:8080/panel).
-
 ## Desarrollo
 
-Ejecuta el backend con `mvn spring-boot:run "-Dspring-boot.run.profiles=demo"`. En otra terminal, entra a `frontend/` y ejecuta `npm ci` y `npm start`. El proxy de Angular envía `/api/` y `/images/` a Spring Boot en el puerto 8080.
+Ejecuta el backend con `mvn spring-boot:run "-Dspring-boot.run.profiles=demo"`. En otra terminal, entra a `frontend/` y ejecuta `npm ci` y `npm start`. Abre `http://localhost:4200/gestion-catalogo/carta` para trabajar en la carta con recarga en vivo. El proxy de Angular envía `/api/` y `/images/` a Spring Boot en el puerto 8080. Para probar todos los enlaces del sitio en un solo puerto, usa el JAR de demostración.
 
 - `mvn -B test` ejecuta las pruebas de integración con H2 en memoria.
 - `npm run build` dentro de `frontend/` genera una compilación de producción de Angular.

@@ -17,12 +17,6 @@ public class ProductoServicesImpl implements ProductoServices {
 
     @Transactional(readOnly = true)
     @Override
-    public List<ProductoJPA> findByCategoryJPA(String categoryJPA) {
-        return productoRepository.findByCategoryJPA(categoryJPA);
-    }
-
-    @Transactional(readOnly = true)
-    @Override
     public ProductoJPA findTopByCategoryJPAOrderByPriceJPADesc(String categoryJPA) {
         return productoRepository.findTopByCategoryJPAOrderByPriceJPADesc(categoryJPA);
     }
